@@ -84,26 +84,26 @@ export default function Home() {
         )}
       </Card>
 
-      {/* Navigation Quick Links Grid */}
+      {/* Navigation Grid of 6 modules */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         
         {/* Kiblat link */}
         <Link href="/kiblat" className="group">
-          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300">
+          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300 border border-card-border/50 hover:border-sifa-gold-500/50 hover:shadow-lg hover:shadow-sifa-gold-500/5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-sifa-gold-100 dark:bg-sifa-gold-900/20 text-sifa-gold-600 flex items-center justify-center shadow-inner">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
               </div>
-              <h3 className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100">
+              <h3 className="font-heading text-base font-bold text-sifa-green-900 dark:text-sifa-green-100">
                 Arah Kiblat
               </h3>
             </div>
             <p className="text-xs text-foreground/60 leading-relaxed">
-              Cek arah kiblat dan hitung azimuth Ka&apos;bah secara akurat dan transparan berdasarkan rumus modul.
+              Cek arah kiblat dan hadap HP dengan sensor kompas absolut serta visualisasi rumus bola.
             </p>
-            <span className="text-xs font-bold text-sifa-green-600 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
+            <span className="text-xs font-bold text-sifa-green-600 dark:text-sifa-green-400 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
               Hitung Sekarang
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -114,21 +114,21 @@ export default function Home() {
 
         {/* Salat link */}
         <Link href="/waktu-salat" className="group">
-          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300">
+          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300 border border-card-border/50 hover:border-emerald-600/30 hover:shadow-lg hover:shadow-emerald-600/5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-sifa-green-50 dark:bg-sifa-green-900/20 text-sifa-green-600 flex items-center justify-center shadow-inner">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100">
+              <h3 className="font-heading text-base font-bold text-sifa-green-900 dark:text-sifa-green-100">
                 Waktu Salat
               </h3>
             </div>
             <p className="text-xs text-foreground/60 leading-relaxed">
-              Jadwal salat harian & 30 hari ke depan dengan kustomisasi ikhtiyat dan kriteria Muhammadiyah.
+              Jadwal salat toposentris, penyesuaian ikhtiyat, serta pintasan layar TV informasi masjid.
             </p>
-            <span className="text-xs font-bold text-sifa-green-600 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
+            <span className="text-xs font-bold text-sifa-green-600 dark:text-sifa-green-400 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
               Buka Jadwal
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -137,30 +137,107 @@ export default function Home() {
           </Card>
         </Link>
 
-      </div>
+        {/* Kalender Hijriah */}
+        <Link href="/kalender" className="group">
+          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300 border border-card-border/50 hover:border-blue-500/30 hover:shadow-lg hover:shadow-blue-500/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/20 text-blue-600 flex items-center justify-center shadow-inner">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="font-heading text-base font-bold text-sifa-green-900 dark:text-sifa-green-100">
+                Kalender Hijriah
+              </h3>
+            </div>
+            <p className="text-xs text-foreground/60 leading-relaxed">
+              Perbandingan visual dan kriteria hisab bulanan Wujudul Hilal vs KHGT Muhammadiyah.
+            </p>
+            <span className="text-xs font-bold text-sifa-green-600 dark:text-sifa-green-400 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
+              Buka Kalender
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </Card>
+        </Link>
 
-      {/* Placeholders for upcoming features */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-60">
-        <Card className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground/80 font-heading">Kalender Hijriah</span>
-            <Badge>Segera Hadir</Badge>
-          </div>
-          <p className="text-[11px] text-foreground/50">
-            Integrasi kriteria Wujudul Hilal & Kalender Hijriah Global Tunggal (KHGT).
-          </p>
-        </Card>
-        <Card className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-foreground/80 font-heading">Edukasi & Direktori AUM</span>
-            <Badge>Segera Hadir</Badge>
-          </div>
-          <p className="text-[11px] text-foreground/50">
-            Artikel ilmiah falakiyah & status arah kiblat masjid AUM terverifikasi.
-          </p>
-        </Card>
-      </div>
+        {/* Edukasi Falak */}
+        <Link href="/edukasi" className="group">
+          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300 border border-card-border/50 hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/20 text-purple-600 flex items-center justify-center shadow-inner">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h3 className="font-heading text-base font-bold text-sifa-green-900 dark:text-sifa-green-100">
+                Edukasi Falak
+              </h3>
+            </div>
+            <p className="text-xs text-foreground/60 leading-relaxed">
+              Artikel teori falakiyah dan kalkulator latihan terurai untuk mempermudah pemahaman.
+            </p>
+            <span className="text-xs font-bold text-sifa-green-600 dark:text-sifa-green-400 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
+              Mulai Belajar
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </Card>
+        </Link>
 
+        {/* Direktori Masjid */}
+        <Link href="/direktori" className="group">
+          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300 border border-card-border/50 hover:border-amber-600/30 hover:shadow-lg hover:shadow-amber-600/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-600 flex items-center justify-center shadow-inner">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <h3 className="font-heading text-base font-bold text-sifa-green-900 dark:text-sifa-green-100">
+                Direktori Masjid AUM
+              </h3>
+            </div>
+            <p className="text-xs text-foreground/60 leading-relaxed">
+              Daftar masjid pilot persyarikatan Muhammadiyah dengan rujukan koordinat akurat.
+            </p>
+            <span className="text-xs font-bold text-sifa-green-600 dark:text-sifa-green-400 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
+              Lihat Direktori
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </Card>
+        </Link>
+
+        {/* Takmir Dashboard */}
+        <Link href="/takmir" className="group">
+          <Card className="h-full flex flex-col gap-3 group-hover:-translate-y-1 transition-all duration-300 border border-card-border/50 hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/20 text-cyan-600 flex items-center justify-center shadow-inner">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <h3 className="font-heading text-base font-bold text-sifa-green-900 dark:text-sifa-green-100">
+                Dashboard Takmir
+              </h3>
+            </div>
+            <p className="text-xs text-foreground/60 leading-relaxed">
+              Validasi arah saf masjid, cetak sertifikat verifikasi kiblat resmi, dan kelola data.
+            </p>
+            <span className="text-xs font-bold text-sifa-green-600 dark:text-sifa-green-400 mt-auto flex items-center gap-1 group-hover:gap-1.5 transition-all">
+              Akses Dashboard
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </Card>
+        </Link>
+
+      </div>
     </div>
   );
 }
