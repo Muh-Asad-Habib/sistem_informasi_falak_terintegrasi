@@ -87,4 +87,4 @@ $$\tan(AQ) = \frac{\sin(\lambda_{K} - \lambda_{T})}{\cos(\phi_{T}) \cdot \tan(\p
 ---
 
 ## 📄 Lisensi
-Proyek ini dilisensikan di bawah **MIT License**. Dikembangkan sebagai wujud nyata integrasi Al-Islam Kemuhammadiyahan (AIK) dengan keilmuan Informatika di Fakultas Teknik Universitas Muhammadiyah Makassar.
+Proyek ini dilisensikan di bawah **[MIT License](LICENSE)**. Dikembangkan sebagai wujud nyata integrasi Al-Islam Kemuhammadiyahan (AIK) dengan keilmuan Informatika di Fakultas Teknik Universitas Muhammadiyah Makassar.
