@@ -1,4 +1,20 @@
-[
+// Generated automatically - 100 Mosques around Unismuh Makassar
+export interface MasjidData {
+  id: string;
+  nama: string;
+  alamat: string;
+  lat: number;
+  lng: number;
+  elevation: number;
+  timezone: number;
+  status_verifikasi_kiblat: 'terverifikasi' | 'belum_terverifikasi';
+  tanggal_verifikasi: string;
+  sudut_kiblat_hasil: number;
+  azimuth_kiblat_hasil: number;
+  kontak_takmir: string | null;
+}
+
+export const MASJID_DATA: MasjidData[] = [
   {
     "id": "m-pilot-1",
     "nama": "Masjid Subulussalam Al-Khoory (Kampus Unismuh)",
@@ -1399,4 +1415,4 @@
     "azimuth_kiblat_hasil": 292.48,
     "kontak_takmir": "085512151071"
   }
-]
+];
