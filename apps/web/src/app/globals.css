@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Mushaf Modern Theme - Light Ivory */
+  --background: #FBF8F1; /* Ivory 50 */
+  --foreground: #1F2A24; /* Ink 900 */
+  
+  --sifa-green-900: #0B4630;
+  --sifa-green-800: #0D573B;
+  --sifa-green-700: #0E6544;
+  --sifa-green-600: #0F6E3D;
+  --sifa-green-500: #128249;
+  --sifa-green-100: #D8ECE0;
+  --sifa-green-50: #EEF7F2;
+
+  --sifa-gold-900: #78520A;
+  --sifa-gold-600: #B58019;
+  --sifa-gold-500: #E3A72B;
+  --sifa-gold-100: #F9EFD9;
+  --sifa-gold-50: #FDF9F0;
+
+  --sifa-blue-900: #0D263B;
+  --sifa-blue-700: #1B4B73;
+  --sifa-blue-500: #2971AC;
+  --sifa-blue-100: #DCECF7;
+
+  --card-bg: #FFFFFF;
+  --card-border: #E8E2D2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Mushaf Modern Theme - Dark Forest Green */
+    --background: #091912; /* Dark green-ink */
+    --foreground: #EEF4F0;
+
+    --card-bg: #0C2117;
+    --card-border: #1B3F30;
+    
+    --sifa-green-50: #0A2218;
+    --sifa-green-100: #0E3424;
+    --sifa-gold-50: #1C2012;
+    --sifa-gold-100: #2D3017;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Signature Animations & Utilities */
+.mushaf-grid {
+  background-image: radial-gradient(var(--card-border) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.glow-gold {
+  box-shadow: 0 0 15px rgba(227, 167, 43, 0.25);
+}
+
+.glow-green {
+  box-shadow: 0 0 15px rgba(15, 110, 61, 0.2);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sifa-green-600);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sifa-green-900);
+}
+
+/* TV Mode layout overrides */
+html:has(#layar-masjid-view) header {
+  display: none !important;
+}
+html:has(#layar-masjid-view) main {
+  padding: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+html:has(#layar-masjid-view) nav {
+  display: none !important;
+}
+
+/* Print optimization for Qibla Certificate */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  header, nav, button, .print\:hidden {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    background: none !important;
+  }
+}
