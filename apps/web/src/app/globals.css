@@ -33,16 +33,30 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Mushaf Modern Theme - Dark Forest Green */
-    --background: #091912; /* Dark green-ink */
-    --foreground: #EEF4F0;
+    --background: #07140e; /* Deep green-ink background */
+    --foreground: #f4f7f5; /* Bright text */
 
-    --card-bg: #0C2117;
-    --card-border: #1B3F30;
+    --card-bg: #0c1d15;
+    --card-border: #1f3d30;
     
-    --sifa-green-50: #0A2218;
-    --sifa-green-100: #0E3424;
-    --sifa-gold-50: #1C2012;
-    --sifa-gold-100: #2D3017;
+    --sifa-green-900: #e3f5eb; /* High contrast light sage green for headers */
+    --sifa-green-800: #c9ebd8;
+    --sifa-green-700: #a9e0c1;
+    --sifa-green-600: #7ccca3;
+    --sifa-green-500: #42b87f;
+    --sifa-green-100: #1c3f30; /* Dark container fill */
+    --sifa-green-50: #0e271e;
+
+    --sifa-gold-900: #fbf5e6; /* High contrast light gold for dark headers */
+    --sifa-gold-600: #f3d79a;
+    --sifa-gold-500: #e3a72b;
+    --sifa-gold-100: #332812;
+    --sifa-gold-50: #1f180b;
+
+    --sifa-blue-900: #eaf3fa;
+    --sifa-blue-700: #a6cbe7;
+    --sifa-blue-500: #2971ac;
+    --sifa-blue-100: #152d3e;
   }
 }
 

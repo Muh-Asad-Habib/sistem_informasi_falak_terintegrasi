@@ -394,20 +394,6 @@ export const MASJID_DATA: MasjidData[] = [
     "kontak_takmir": "085298973600"
   },
   {
-    "id": "m-gen-19",
-    "nama": "Musala Baitul Makmur (Sekitar Unismuh #19)",
-    "alamat": "Jl. Talasalapang II No. 183, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
-    "lat": -5.17976,
-    "lng": 119.438467,
-    "elevation": 5,
-    "timezone": 8,
-    "status_verifikasi_kiblat": "terverifikasi",
-    "tanggal_verifikasi": "2026-07-20",
-    "sudut_kiblat_hasil": 67.52,
-    "azimuth_kiblat_hasil": 292.48,
-    "kontak_takmir": null
-  },
-  {
     "id": "m-gen-20",
     "nama": "Masjid Taqwa Muhammadiyah (Sekitar Unismuh #20)",
     "alamat": "Jl. Talasalapang II No. 171, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
