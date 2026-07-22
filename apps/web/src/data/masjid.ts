@@ -1,4 +1,4 @@
-// Generated automatically - 100 Mosques around Unismuh Makassar
+// Generated automatically - 100 Mosques around Unismuh Makassar (Cleaned Names)
 export interface MasjidData {
   id: string;
   nama: string;
@@ -143,7 +143,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-1",
-    "nama": "Musala Nurul Haq (Sekitar Unismuh #1)",
+    "nama": "Musala Nurul Haq",
     "alamat": "Jl. Skarda N No. 163, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.171551,
     "lng": 119.430417,
@@ -157,7 +157,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-2",
-    "nama": "Musala Nurul Iman (Sekitar Unismuh #2)",
+    "nama": "Musala Nurul Iman",
     "alamat": "Jl. Kandea No. 128, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.178312,
     "lng": 119.441575,
@@ -171,7 +171,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-3",
-    "nama": "Musala At-Taqwa (Sekitar Unismuh #3)",
+    "nama": "Musala At-Taqwa",
     "alamat": "Jl. Talasalapang II No. 18, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.183906,
     "lng": 119.435587,
@@ -185,7 +185,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-4",
-    "nama": "Masjid Baitussalam (Sekitar Unismuh #4)",
+    "nama": "Masjid Baitussalam",
     "alamat": "Jl. Karunrung No. 136, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.195348,
     "lng": 119.446741,
@@ -199,7 +199,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-5",
-    "nama": "Masjid Al-Kautsar (Sekitar Unismuh #5)",
+    "nama": "Masjid Al-Kautsar",
     "alamat": "Jl. Skarda N No. 131, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.198088,
     "lng": 119.44214,
@@ -213,7 +213,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-6",
-    "nama": "Masjid As-Syifa (Sekitar Unismuh #6)",
+    "nama": "Masjid As-Syifa",
     "alamat": "Jl. Sultan Alauddin No. 46, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.176174,
     "lng": 119.444906,
@@ -227,7 +227,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-7",
-    "nama": "Musala Taqwa Muhammadiyah (Sekitar Unismuh #7)",
+    "nama": "Musala Taqwa Muhammadiyah",
     "alamat": "Jl. Talasalapang II No. 100, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.196403,
     "lng": 119.428411,
@@ -241,7 +241,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-8",
-    "nama": "Masjid Nurul Haq (Sekitar Unismuh #8)",
+    "nama": "Masjid Nurul Haq",
     "alamat": "Jl. Karunrung No. 116, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.175829,
     "lng": 119.456898,
@@ -255,7 +255,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-9",
-    "nama": "Masjid Baitul Makmur (Sekitar Unismuh #9)",
+    "nama": "Masjid Baitul Makmur",
     "alamat": "Jl. Minasa Upa No. 187, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.193039,
     "lng": 119.444097,
@@ -269,7 +269,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-10",
-    "nama": "Musala Baiturrahim (Sekitar Unismuh #10)",
+    "nama": "Musala Baiturrahim",
     "alamat": "Jl. Kandea No. 122, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.170004,
     "lng": 119.429473,
@@ -283,7 +283,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-11",
-    "nama": "Masjid As-Syifa (Sekitar Unismuh #11)",
+    "nama": "Masjid As-Syifa",
     "alamat": "Jl. Talasalapang No. 77, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.197882,
     "lng": 119.434762,
@@ -297,7 +297,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-12",
-    "nama": "Musala Baitussalam (Sekitar Unismuh #12)",
+    "nama": "Musala Baitussalam",
     "alamat": "Jl. Skarda N No. 1, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.176878,
     "lng": 119.439274,
@@ -311,7 +311,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-13",
-    "nama": "Musala Baitussalam (Sekitar Unismuh #13)",
+    "nama": "Musala Baitussalam",
     "alamat": "Jl. Talasalapang II No. 47, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.183877,
     "lng": 119.456835,
@@ -325,7 +325,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-14",
-    "nama": "Musala Nurul Haq (Sekitar Unismuh #14)",
+    "nama": "Musala Nurul Haq",
     "alamat": "Jl. Kandea No. 74, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.187397,
     "lng": 119.432121,
@@ -339,7 +339,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-15",
-    "nama": "Musala Al-Kautsar (Sekitar Unismuh #15)",
+    "nama": "Musala Al-Kautsar",
     "alamat": "Jl. Talasalapang No. 46, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.177156,
     "lng": 119.433371,
@@ -353,7 +353,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-16",
-    "nama": "Musala Al-Ikhlas (Sekitar Unismuh #16)",
+    "nama": "Musala Al-Ikhlas",
     "alamat": "Jl. Monumen Emmy Saelan No. 60, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.176814,
     "lng": 119.428955,
@@ -367,7 +367,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-17",
-    "nama": "Musala Babussalam (Sekitar Unismuh #17)",
+    "nama": "Musala Babussalam",
     "alamat": "Jl. Karunrung No. 180, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.185927,
     "lng": 119.448544,
@@ -381,7 +381,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-18",
-    "nama": "Musala Taqwa Muhammadiyah (Sekitar Unismuh #18)",
+    "nama": "Musala Taqwa Muhammadiyah",
     "alamat": "Jl. Skarda N No. 26, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.191054,
     "lng": 119.447221,
@@ -395,7 +395,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-20",
-    "nama": "Masjid Taqwa Muhammadiyah (Sekitar Unismuh #20)",
+    "nama": "Masjid Taqwa Muhammadiyah",
     "alamat": "Jl. Talasalapang II No. 171, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.179622,
     "lng": 119.452988,
@@ -409,7 +409,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-21",
-    "nama": "Masjid As-Syifa (Sekitar Unismuh #21)",
+    "nama": "Masjid As-Syifa",
     "alamat": "Jl. Karunrung No. 80, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.195963,
     "lng": 119.445457,
@@ -423,7 +423,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-22",
-    "nama": "Musala Rahmatan Lil 'Alamin (Alauddin #22)",
+    "nama": "Musala Rahmatan Lil 'Alamin",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 119, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.186082,
     "lng": 119.438479,
@@ -437,7 +437,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-23",
-    "nama": "Masjid Nurul Falah (Sekitar Unismuh #23)",
+    "nama": "Masjid Nurul Falah",
     "alamat": "Jl. Talasalapang II No. 174, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.173089,
     "lng": 119.427455,
@@ -451,7 +451,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-24",
-    "nama": "Masjid As-Syifa (Sekitar Unismuh #24)",
+    "nama": "Masjid As-Syifa",
     "alamat": "Jl. Karunrung No. 129, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.184264,
     "lng": 119.456398,
@@ -465,7 +465,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-25",
-    "nama": "Musala Baiturrahman (Alauddin #25)",
+    "nama": "Musala Baiturrahman",
     "alamat": "Jl. Sultan Alauddin Lr. 5 No. 19, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.174804,
     "lng": 119.435133,
@@ -479,7 +479,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-26",
-    "nama": "Musala Nurul Haq (Sekitar Unismuh #26)",
+    "nama": "Musala Nurul Haq",
     "alamat": "Jl. Karunrung No. 85, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.191611,
     "lng": 119.442675,
@@ -493,7 +493,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-27",
-    "nama": "Musala Nurul Iman (Alauddin #27)",
+    "nama": "Musala Nurul Iman",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 31, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.178638,
     "lng": 119.442104,
@@ -507,7 +507,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-28",
-    "nama": "Musala Nurul Haq (Sekitar Unismuh #28)",
+    "nama": "Musala Nurul Haq",
     "alamat": "Jl. Karunrung No. 100, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.19771,
     "lng": 119.453531,
@@ -521,7 +521,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-29",
-    "nama": "Masjid Al-Falah (Sekitar Unismuh #29)",
+    "nama": "Masjid Al-Falah",
     "alamat": "Jl. Karunrung No. 125, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.191801,
     "lng": 119.429341,
@@ -535,7 +535,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-30",
-    "nama": "Masjid Al-Kautsar (Alauddin #30)",
+    "nama": "Masjid Al-Kautsar",
     "alamat": "Jl. Sultan Alauddin Lr. 5 No. 133, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.171001,
     "lng": 119.455872,
@@ -549,7 +549,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-31",
-    "nama": "Musala Rahmatan Lil 'Alamin (Sekitar Unismuh #31)",
+    "nama": "Musala Rahmatan Lil 'Alamin",
     "alamat": "Jl. Sultan Alauddin No. 79, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.175863,
     "lng": 119.433641,
@@ -563,7 +563,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-32",
-    "nama": "Musala Baiturrahim (Sekitar Unismuh #32)",
+    "nama": "Musala Baiturrahim",
     "alamat": "Jl. Talasalapang II No. 90, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.172567,
     "lng": 119.434748,
@@ -577,7 +577,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-33",
-    "nama": "Musala Nurul Huda (Sekitar Unismuh #33)",
+    "nama": "Musala Nurul Huda",
     "alamat": "Jl. Monumen Emmy Saelan No. 111, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.169493,
     "lng": 119.432882,
@@ -591,7 +591,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-34",
-    "nama": "Musala Al-Kautsar (Sekitar Unismuh #34)",
+    "nama": "Musala Al-Kautsar",
     "alamat": "Jl. Minasa Upa No. 92, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.184515,
     "lng": 119.437695,
@@ -605,7 +605,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-35",
-    "nama": "Masjid Baiturrahman (Alauddin #35)",
+    "nama": "Masjid Baiturrahman",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 94, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.176099,
     "lng": 119.43004,
@@ -619,7 +619,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-36",
-    "nama": "Masjid Nurul Falah (Sekitar Unismuh #36)",
+    "nama": "Masjid Nurul Falah",
     "alamat": "Jl. Kandea No. 67, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.177793,
     "lng": 119.426454,
@@ -633,7 +633,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-37",
-    "nama": "Masjid Al-Jihad (Sekitar Unismuh #37)",
+    "nama": "Masjid Al-Jihad",
     "alamat": "Jl. Talasalapang No. 35, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.191175,
     "lng": 119.435409,
@@ -647,7 +647,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-38",
-    "nama": "Musala At-Taqwa (Sekitar Unismuh #38)",
+    "nama": "Musala At-Taqwa",
     "alamat": "Jl. Talasalapang No. 133, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.171991,
     "lng": 119.438246,
@@ -661,7 +661,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-39",
-    "nama": "Masjid Nurul Iman (Sekitar Unismuh #39)",
+    "nama": "Masjid Nurul Iman",
     "alamat": "Jl. Monumen Emmy Saelan No. 195, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.197412,
     "lng": 119.435224,
@@ -675,7 +675,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-40",
-    "nama": "Masjid Al-Falah (Sekitar Unismuh #40)",
+    "nama": "Masjid Al-Falah",
     "alamat": "Jl. Minasa Upa No. 200, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.194986,
     "lng": 119.429666,
@@ -689,7 +689,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-41",
-    "nama": "Masjid As-Syifa (Sekitar Unismuh #41)",
+    "nama": "Masjid As-Syifa",
     "alamat": "Jl. Sultan Alauddin No. 45, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.195548,
     "lng": 119.436757,
@@ -703,7 +703,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-42",
-    "nama": "Musala Baiturrahim (Alauddin #42)",
+    "nama": "Musala Baiturrahim",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 181, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.17793,
     "lng": 119.432908,
@@ -717,7 +717,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-43",
-    "nama": "Musala Nurul Falah (Sekitar Unismuh #43)",
+    "nama": "Musala Nurul Falah",
     "alamat": "Jl. Kandea No. 51, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.186589,
     "lng": 119.428903,
@@ -731,7 +731,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-44",
-    "nama": "Masjid Nurul Haq (Sekitar Unismuh #44)",
+    "nama": "Masjid Nurul Haq",
     "alamat": "Jl. Kandea No. 197, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.182223,
     "lng": 119.456933,
@@ -745,7 +745,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-45",
-    "nama": "Musala Baiturrahim (Sekitar Unismuh #45)",
+    "nama": "Musala Baiturrahim",
     "alamat": "Jl. Monumen Emmy Saelan No. 146, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.182776,
     "lng": 119.449307,
@@ -759,7 +759,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-46",
-    "nama": "Masjid Nurul Huda (Sekitar Unismuh #46)",
+    "nama": "Masjid Nurul Huda",
     "alamat": "Jl. Sultan Alauddin No. 165, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.191951,
     "lng": 119.426744,
@@ -773,7 +773,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-47",
-    "nama": "Musala Baiturrahim (Sekitar Unismuh #47)",
+    "nama": "Musala Baiturrahim",
     "alamat": "Jl. Monumen Emmy Saelan No. 83, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.184936,
     "lng": 119.427209,
@@ -787,7 +787,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-48",
-    "nama": "Masjid Rahmatan Lil 'Alamin (Sekitar Unismuh #48)",
+    "nama": "Masjid Rahmatan Lil 'Alamin",
     "alamat": "Jl. Karunrung No. 30, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.189258,
     "lng": 119.440256,
@@ -801,7 +801,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-49",
-    "nama": "Masjid Khairul Bariyyah (Sekitar Unismuh #49)",
+    "nama": "Masjid Khairul Bariyyah",
     "alamat": "Jl. Talasalapang II No. 86, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.191686,
     "lng": 119.436742,
@@ -815,7 +815,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-50",
-    "nama": "Musala Nurul Iman (Sekitar Unismuh #50)",
+    "nama": "Musala Nurul Iman",
     "alamat": "Jl. Monumen Emmy Saelan No. 191, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.171724,
     "lng": 119.45022,
@@ -829,7 +829,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-51",
-    "nama": "Masjid Al-Falah (Sekitar Unismuh #51)",
+    "nama": "Masjid Al-Falah",
     "alamat": "Jl. Monumen Emmy Saelan No. 40, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.169723,
     "lng": 119.43845,
@@ -843,7 +843,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-52",
-    "nama": "Masjid Nurul Falah (Alauddin #52)",
+    "nama": "Masjid Nurul Falah",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 85, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.191373,
     "lng": 119.43735,
@@ -857,7 +857,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-53",
-    "nama": "Musala Al-Ikhlas (Sekitar Unismuh #53)",
+    "nama": "Musala Al-Ikhlas",
     "alamat": "Jl. Talasalapang No. 6, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.186476,
     "lng": 119.448746,
@@ -871,7 +871,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-54",
-    "nama": "Musala Babussalam (Sekitar Unismuh #54)",
+    "nama": "Musala Babussalam",
     "alamat": "Jl. Monumen Emmy Saelan No. 127, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.180319,
     "lng": 119.448953,
@@ -885,7 +885,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-55",
-    "nama": "Musala Al-Kautsar (Sekitar Unismuh #55)",
+    "nama": "Musala Al-Kautsar",
     "alamat": "Jl. Sultan Alauddin No. 106, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.174859,
     "lng": 119.454104,
@@ -899,7 +899,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-56",
-    "nama": "Masjid Babussalam (Sekitar Unismuh #56)",
+    "nama": "Masjid Babussalam",
     "alamat": "Jl. Monumen Emmy Saelan No. 62, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.195475,
     "lng": 119.446147,
@@ -913,7 +913,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-57",
-    "nama": "Masjid Al-Hijrah (Sekitar Unismuh #57)",
+    "nama": "Masjid Al-Hijrah",
     "alamat": "Jl. Minasa Upa No. 121, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.170402,
     "lng": 119.426762,
@@ -927,7 +927,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-58",
-    "nama": "Masjid Nurul Iman (Sekitar Unismuh #58)",
+    "nama": "Masjid Nurul Iman",
     "alamat": "Jl. Minasa Upa No. 136, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.167406,
     "lng": 119.430848,
@@ -941,7 +941,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-59",
-    "nama": "Masjid Darussalam (Alauddin #59)",
+    "nama": "Masjid Darussalam",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 57, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.179529,
     "lng": 119.432008,
@@ -955,7 +955,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-60",
-    "nama": "Masjid Al-Kautsar (Sekitar Unismuh #60)",
+    "nama": "Masjid Al-Kautsar",
     "alamat": "Jl. Sultan Alauddin No. 21, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.195421,
     "lng": 119.453383,
@@ -969,7 +969,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-61",
-    "nama": "Musala Nurul Huda (Sekitar Unismuh #61)",
+    "nama": "Musala Nurul Huda",
     "alamat": "Jl. Kandea No. 62, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.189018,
     "lng": 119.431245,
@@ -983,7 +983,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-62",
-    "nama": "Masjid Khairul Bariyyah (Sekitar Unismuh #62)",
+    "nama": "Masjid Khairul Bariyyah",
     "alamat": "Jl. Skarda N No. 156, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.180929,
     "lng": 119.425437,
@@ -997,7 +997,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-63",
-    "nama": "Masjid Al-Ikhlas (Sekitar Unismuh #63)",
+    "nama": "Masjid Al-Ikhlas",
     "alamat": "Jl. Karunrung No. 22, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.190406,
     "lng": 119.426117,
@@ -1011,7 +1011,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-64",
-    "nama": "Musala Al-Hijrah (Sekitar Unismuh #64)",
+    "nama": "Musala Al-Hijrah",
     "alamat": "Jl. Kandea No. 181, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.168259,
     "lng": 119.430234,
@@ -1025,7 +1025,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-65",
-    "nama": "Masjid Babussalam (Sekitar Unismuh #65)",
+    "nama": "Masjid Babussalam",
     "alamat": "Jl. Minasa Upa No. 127, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.190379,
     "lng": 119.454206,
@@ -1039,7 +1039,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-66",
-    "nama": "Masjid Al-Hijrah (Sekitar Unismuh #66)",
+    "nama": "Masjid Al-Hijrah",
     "alamat": "Jl. Kandea No. 87, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.169874,
     "lng": 119.426069,
@@ -1053,7 +1053,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-67",
-    "nama": "Masjid Al-Falah (Sekitar Unismuh #67)",
+    "nama": "Masjid Al-Falah",
     "alamat": "Jl. Karunrung No. 100, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.186834,
     "lng": 119.448692,
@@ -1067,7 +1067,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-68",
-    "nama": "Masjid Baitul Makmur (Alauddin #68)",
+    "nama": "Masjid Baitul Makmur",
     "alamat": "Jl. Sultan Alauddin Lr. 5 No. 27, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.192988,
     "lng": 119.428008,
@@ -1081,7 +1081,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-69",
-    "nama": "Musala Baiturrahman (Alauddin #69)",
+    "nama": "Musala Baiturrahman",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 21, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.182021,
     "lng": 119.425601,
@@ -1095,7 +1095,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-70",
-    "nama": "Musala As-Syifa (Alauddin #70)",
+    "nama": "Musala As-Syifa",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 181, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.177536,
     "lng": 119.434305,
@@ -1109,7 +1109,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-71",
-    "nama": "Musala At-Taqwa (Sekitar Unismuh #71)",
+    "nama": "Musala At-Taqwa",
     "alamat": "Jl. Talasalapang II No. 19, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.198753,
     "lng": 119.442747,
@@ -1123,7 +1123,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-72",
-    "nama": "Masjid Khairul Bariyyah (Alauddin #72)",
+    "nama": "Masjid Khairul Bariyyah",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 17, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.179246,
     "lng": 119.427314,
@@ -1137,7 +1137,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-73",
-    "nama": "Masjid Al-Kautsar (Sekitar Unismuh #73)",
+    "nama": "Masjid Al-Kautsar",
     "alamat": "Jl. Talasalapang II No. 70, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.196085,
     "lng": 119.439708,
@@ -1151,7 +1151,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-74",
-    "nama": "Masjid Al-Ikhlas (Sekitar Unismuh #74)",
+    "nama": "Masjid Al-Ikhlas",
     "alamat": "Jl. Sultan Alauddin No. 66, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.183892,
     "lng": 119.428754,
@@ -1165,7 +1165,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-75",
-    "nama": "Musala Nurul Falah (Sekitar Unismuh #75)",
+    "nama": "Musala Nurul Falah",
     "alamat": "Jl. Skarda N No. 125, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.174301,
     "lng": 119.44871,
@@ -1179,7 +1179,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-76",
-    "nama": "Musala Khairul Bariyyah (Sekitar Unismuh #76)",
+    "nama": "Musala Khairul Bariyyah",
     "alamat": "Jl. Sultan Alauddin No. 14, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.196262,
     "lng": 119.442287,
@@ -1193,7 +1193,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-77",
-    "nama": "Masjid Babussalam (Sekitar Unismuh #77)",
+    "nama": "Masjid Babussalam",
     "alamat": "Jl. Sultan Alauddin No. 200, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.189792,
     "lng": 119.442991,
@@ -1207,7 +1207,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-78",
-    "nama": "Masjid Baiturrahim (Sekitar Unismuh #78)",
+    "nama": "Masjid Baiturrahim",
     "alamat": "Jl. Minasa Upa No. 8, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.195521,
     "lng": 119.4422,
@@ -1221,7 +1221,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-79",
-    "nama": "Musala Nurul Falah (Sekitar Unismuh #79)",
+    "nama": "Musala Nurul Falah",
     "alamat": "Jl. Talasalapang II No. 192, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.1674,
     "lng": 119.432763,
@@ -1235,7 +1235,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-80",
-    "nama": "Masjid At-Taqwa (Sekitar Unismuh #80)",
+    "nama": "Masjid At-Taqwa",
     "alamat": "Jl. Minasa Upa No. 184, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.167051,
     "lng": 119.43664,
@@ -1249,7 +1249,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-81",
-    "nama": "Masjid Nurul Falah (Sekitar Unismuh #81)",
+    "nama": "Masjid Nurul Falah",
     "alamat": "Jl. Kandea No. 17, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.177222,
     "lng": 119.435402,
@@ -1263,7 +1263,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-82",
-    "nama": "Musala Baitussalam (Sekitar Unismuh #82)",
+    "nama": "Musala Baitussalam",
     "alamat": "Jl. Minasa Upa No. 9, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.19329,
     "lng": 119.443653,
@@ -1277,7 +1277,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-83",
-    "nama": "Musala Nurul Falah (Alauddin #83)",
+    "nama": "Musala Nurul Falah",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 71, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.169197,
     "lng": 119.452405,
@@ -1291,7 +1291,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-84",
-    "nama": "Musala Baitul Makmur (Sekitar Unismuh #84)",
+    "nama": "Musala Baitul Makmur",
     "alamat": "Jl. Minasa Upa No. 186, Kel. Minasa Upa, Kec. Rappocini, Kota Makassar",
     "lat": -5.183927,
     "lng": 119.435268,
@@ -1305,7 +1305,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-85",
-    "nama": "Masjid Baitussalam (Alauddin #85)",
+    "nama": "Masjid Baitussalam",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 50, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.175768,
     "lng": 119.450139,
@@ -1319,7 +1319,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-86",
-    "nama": "Masjid Taqwa Muhammadiyah (Alauddin #86)",
+    "nama": "Masjid Taqwa Muhammadiyah",
     "alamat": "Jl. Sultan Alauddin Lr. 5 No. 115, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.167145,
     "lng": 119.425616,
@@ -1333,7 +1333,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-87",
-    "nama": "Masjid Khairul Bariyyah (Sekitar Unismuh #87)",
+    "nama": "Masjid Khairul Bariyyah",
     "alamat": "Jl. Karunrung No. 171, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.174799,
     "lng": 119.432605,
@@ -1347,7 +1347,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-88",
-    "nama": "Masjid Khairul Bariyyah (Sekitar Unismuh #88)",
+    "nama": "Masjid Khairul Bariyyah",
     "alamat": "Jl. Karunrung No. 169, Kel. Karunrung, Kec. Rappocini, Kota Makassar",
     "lat": -5.19781,
     "lng": 119.449861,
@@ -1361,7 +1361,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-89",
-    "nama": "Masjid As-Syifa (Alauddin #89)",
+    "nama": "Masjid As-Syifa",
     "alamat": "Jl. Sultan Alauddin Lr. 5 No. 65, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.187596,
     "lng": 119.439847,
@@ -1375,7 +1375,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-90",
-    "nama": "Musala Al-Falah (Alauddin #90)",
+    "nama": "Musala Al-Falah",
     "alamat": "Jl. Sultan Alauddin II Lr. 4 No. 116, Kel. Mangasa, Kec. Tamalate, Kota Makassar",
     "lat": -5.171323,
     "lng": 119.447172,
@@ -1389,7 +1389,7 @@ export const MASJID_DATA: MasjidData[] = [
   },
   {
     "id": "m-gen-91",
-    "nama": "Musala Al-Hijrah (Sekitar Unismuh #91)",
+    "nama": "Musala Al-Hijrah",
     "alamat": "Jl. Sultan Alauddin No. 188, Kel. Gunung Sari, Kec. Rappocini, Kota Makassar",
     "lat": -5.167775,
     "lng": 119.426184,
