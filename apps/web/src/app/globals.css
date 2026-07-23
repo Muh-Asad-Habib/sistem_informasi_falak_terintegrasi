@@ -58,6 +58,11 @@
     --sifa-blue-500: #2971ac;
     --sifa-blue-100: #152d3e;
   }
+
+  /* Keep secondary text readable without changing the dark container color token. */
+  .dark\:text-sifa-green-100 {
+    color: var(--sifa-green-800) !important;
+  }
 }
 
 body {
