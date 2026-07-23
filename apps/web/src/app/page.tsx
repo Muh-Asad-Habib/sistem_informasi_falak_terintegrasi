@@ -15,6 +15,7 @@ export default function Home() {
   const [gpsStatus, setGpsStatus] = useState<string>('Memakai Markaz Unismuh (Default)');
   const [locationName, setLocationName] = useState<string>('Makassar, Sulawesi Selatan');
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   // Perbarui jadwal salat saat koordinat berubah
   useEffect(() => {
@@ -31,6 +32,13 @@ export default function Home() {
   // Cari lokasi otomatis saat pertama kali dibuka
   useEffect(() => {
     detectLocation();
+  }, []);
+
+  // Perbarui penanda waktu salat aktif tanpa mengubah jadwal yang telah dihitung.
+  useEffect(() => {
+    setCurrentTime(new Date());
+    const timer = setInterval(() => setCurrentTime(new Date()), 60_000);
+    return () => clearInterval(timer);
   }, []);
 
   const detectLocation = () => {
@@ -55,6 +63,21 @@ export default function Home() {
   const qiblaResult = hitungArahKiblat(coords);
   const azimuth = qiblaResult.azimuthKiblat.decimal;
   const sudutKiblat = qiblaResult.sudutArahKiblat.decimal;
+  const todayPrayers = schedule ? [
+    { label: 'Imsak', val: schedule.imsak },
+    { label: 'Subuh', val: schedule.subuh },
+    { label: 'Terbit', val: schedule.terbit },
+    { label: 'Dhuha', val: schedule.dhuha },
+    { label: 'Zuhur', val: schedule.zuhur },
+    { label: 'Asar', val: schedule.asar },
+    { label: 'Maghrib', val: schedule.magrib },
+    { label: 'Isya', val: schedule.isya },
+  ] : [];
+  const currentMinutes = currentTime ? currentTime.getHours() * 60 + currentTime.getMinutes() : -1;
+  const activePrayer = todayPrayers.reduce((active, prayer) => {
+    const [hours, minutes] = prayer.val.split(':').map(Number);
+    return currentMinutes >= hours * 60 + minutes ? prayer.label : active;
+  }, 'Isya');
 
   return (
     <div className="flex flex-col gap-10 py-6 max-w-5xl mx-auto">
@@ -257,21 +280,12 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-x-6 gap-y-3 pt-2">
-                {[
-                  { label: 'Imsak', val: schedule.imsak },
-                  { label: 'Subuh', val: schedule.subuh },
-                  { label: 'Terbit', val: schedule.terbit },
-                  { label: 'Dhuha', val: schedule.dhuha },
-                  { label: 'Zuhur', val: schedule.zuhur, active: true },
-                  { label: 'Asar', val: schedule.asar },
-                  { label: 'Maghrib', val: schedule.magrib },
-                  { label: 'Isya', val: schedule.isya },
-                ].map((s, idx) => (
+                {todayPrayers.map((s, idx) => (
                   <div 
                     key={idx} 
                     className={`flex items-center justify-between p-2.5 rounded-xl border border-transparent transition-all ${
-                      s.active 
-                        ? 'bg-sifa-green-900 text-white font-bold shadow-md shadow-sifa-green-900/10' 
+                      s.label === activePrayer
+                        ? 'bg-sifa-green-900 text-sifa-green-50 font-bold shadow-md shadow-sifa-green-900/10' 
                         : 'bg-card-border/5 border-card-border/20 text-foreground/80 hover:bg-card-border/10'
                     }`}
                   >
