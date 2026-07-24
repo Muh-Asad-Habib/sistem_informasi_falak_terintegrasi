@@ -15,7 +15,7 @@
 
 <br/>
 
-*Dikembangkan untuk PKM AIK IV (CPMK 8) · Fakultas Teknik Informatika · Universitas Muhammadiyah Makassar*
+*Dikembangkan untuk PKM AIK IV (CPMK 8) · Fakultas Teknik Prodi Informatika · Universitas Muhammadiyah Makassar*
 
 </div>
 
