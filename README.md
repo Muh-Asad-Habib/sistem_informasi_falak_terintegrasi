@@ -187,11 +187,9 @@ npx cloudflared tunnel --url http://localhost:3000
 
 ---
 
-## 👥 Pengembang
+## 👥 Tim Pengembang
 
-**Muh. Asad Habib**  
-Mahasiswa Teknik Informatika · Universitas Muhammadiyah Makassar  
-PKM AIK IV CPMK 8 — 2026
+> *(Akan diperbarui)*
 
 ---
 

@@ -90,7 +90,7 @@ export default function Home() {
 
         <div className="flex-1 flex flex-col gap-4 text-center md:text-left">
           <Badge variant="green" className="font-extrabold tracking-wider uppercase self-center md:self-start bg-sifa-green-100/50 dark:bg-sifa-green-900/30 text-sifa-green-900 dark:text-sifa-green-500 border border-sifa-green-900/10 dark:border-sifa-green-500/20 text-[10px] px-3 py-1">
-            SIFA MVP V1.0
+            Platform Falak Terintegrasi
           </Badge>
           <h1 className="font-heading text-4xl md:text-5xl font-extrabold text-foreground tracking-tight leading-tight">
             Sistem Informasi <br/>
@@ -247,19 +247,30 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Micro dot matrix map mockup */}
-            <div className="w-28 h-20 border border-card-border/30 rounded-xl bg-card-border/5 flex items-center justify-center p-2 relative shrink-0">
-              <svg className="w-full h-full text-sifa-green-500/20" viewBox="0 0 100 60" fill="currentColor">
-                <circle cx="10" cy="15" r="1.5" /><circle cx="20" cy="10" r="1.5" /><circle cx="30" cy="20" r="1.5" />
-                <circle cx="40" cy="35" r="1.5" /><circle cx="50" cy="40" r="1.5" /><circle cx="60" cy="30" r="1.5" />
-                <circle cx="70" cy="25" r="1.5" /><circle cx="80" cy="45" r="1.5" /><circle cx="90" cy="35" r="1.5" />
-                <circle cx="25" cy="45" r="1.5" /><circle cx="55" cy="15" r="1.5" /><circle cx="85" cy="15" r="1.5" />
-              </svg>
-              {/* Pulsing indicator marker */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                <span className="absolute w-4 h-4 rounded-full bg-emerald-500/30 animate-ping" />
-                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-md border border-white" />
+            {/* Google Maps Embed */}
+            <div className="flex flex-col gap-2 shrink-0 w-full sm:w-44">
+              <div className="w-full h-32 rounded-xl overflow-hidden border border-card-border/50 shadow-sm">
+                <iframe
+                  title="Lokasi Anda di Google Maps"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed`}
+                />
               </div>
+              <a
+                href={`https://www.google.com/maps?q=${coords.lat},${coords.lng}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 text-[10px] font-bold py-1.5 px-3 rounded-xl border border-card-border/50 bg-card-bg hover:border-sifa-green-600 hover:text-sifa-green-900 transition-colors text-foreground/70"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Buka di Google Maps
+              </a>
             </div>
           </Card>
 

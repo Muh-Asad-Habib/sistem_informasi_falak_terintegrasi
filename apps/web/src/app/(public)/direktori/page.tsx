@@ -416,16 +416,19 @@ export default function DirektoriPage() {
                     </Button>
                   </Link>
                   <a
-                    href={`https://www.openstreetmap.org/?mlat=${m.lat}&mlon=${m.lng}#map=18/${m.lat}/${m.lng}`}
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="text-[10px] font-bold py-1.5 px-3 border border-card-border text-foreground/70 hover:border-sifa-green-600 transition-colors"
+                      className="text-[10px] font-bold py-1.5 px-3 border border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-colors flex items-center gap-1"
                     >
-                      Peta OSM ↗
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                      </svg>
+                      Google Maps
                     </Button>
                   </a>
                 </div>
