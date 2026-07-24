@@ -22,6 +22,8 @@ const arabic = Noto_Naskh_Arabic({
   display: "swap",
 });
 
+import { SifaLogo } from "@/components/ui/SifaLogo";
+
 export const metadata: Metadata = {
   title: "SIFA — Sistem Informasi Falak Terintegrasi",
   description: "Aplikasi Arah Kiblat, Jadwal Salat & Kalender Hijriah Terpadu tingkat Kampus & AUM. Berdasarkan Pedoman Muhammadiyah dan KHGT.",
@@ -39,15 +41,8 @@ export default function RootLayout({
         {/* Navigation Header */}
         <header className="sticky top-0 z-40 w-full border-b border-card-border bg-background/80 backdrop-blur-md">
           <div className="mx-auto max-w-4xl px-4 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-lg bg-sifa-green-900 text-sifa-gold-500 font-bold transition-all duration-300 group-hover:scale-105 shadow-md shadow-sifa-green-900/10">
-                <span className="font-heading text-lg">S</span>
-                <div className="absolute inset-0 rounded-lg border border-sifa-gold-500/20 group-hover:border-sifa-gold-500/50 transition-colors duration-300" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-heading text-lg font-bold tracking-tight text-sifa-green-900 dark:text-sifa-green-100 leading-none">SIFA</span>
-                <span className="text-[10px] text-sifa-gold-600 font-semibold tracking-wider uppercase mt-0.5">Info Falak Terintegrasi</span>
-              </div>
+            <Link href="/">
+              <SifaLogo size="md" />
             </Link>
 
             {/* Desktop Nav links */}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { hitungKriteriaBulan, HijriKriteriaResult } from 'hisab-core';
@@ -69,7 +69,8 @@ function getTabularHijri(date: Date): { day: number; month: number; year: number
 }
 
 export default function KalenderPage() {
-  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [viewMonth, setViewMonth] = useState<Date | null>(null);
+  const today = useRef(new Date());
   const [activeTab, setActiveTab] = useState<'kalender' | 'kriteria'>('kalender');
   
   // Parameter Kriteria Awal Bulan (default: Unismuh Makassar)
@@ -77,7 +78,7 @@ export default function KalenderPage() {
   const [kriteriaResult, setKriteriaResult] = useState<HijriKriteriaResult | null>(null);
 
   useEffect(() => {
-    setCurrentDate(new Date());
+    setViewMonth(new Date());
   }, []);
 
   // Update kriteria awal bulan saat parameter diganti
@@ -91,7 +92,11 @@ export default function KalenderPage() {
     }
   }, [targetBulan]);
 
-  if (!currentDate) {
+  const goToPrevMonth = () => setViewMonth(prev => prev ? new Date(prev.getFullYear(), prev.getMonth() - 1, 1) : null);
+  const goToNextMonth = () => setViewMonth(prev => prev ? new Date(prev.getFullYear(), prev.getMonth() + 1, 1) : null);
+  const goToToday = () => setViewMonth(new Date());
+
+  if (!viewMonth) {
     return (
       <div className="flex items-center justify-center h-48">
         <div className="w-8 h-8 border-4 border-sifa-green-600 border-t-transparent rounded-full animate-spin" />
@@ -100,8 +105,8 @@ export default function KalenderPage() {
   }
 
   // Info Bulan Masehi saat ini
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  const year = viewMonth.getFullYear();
+  const month = viewMonth.getMonth();
 
   // Hari pertama dalam bulan Masehi
   const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -119,7 +124,7 @@ export default function KalenderPage() {
   for (let d = 1; d <= daysInMonth; d++) {
     const dayDate = new Date(year, month, d);
     const hDate = getTabularHijri(dayDate);
-    const isToday = d === currentDate.getDate() && month === new Date().getMonth() && year === new Date().getFullYear();
+    const isToday = d === today.current.getDate() && month === today.current.getMonth() && year === today.current.getFullYear();
 
     // Hari besar Islam sederhana
     let isHoliday = false;
@@ -179,6 +184,13 @@ export default function KalenderPage() {
         </p>
       </div>
 
+      {/* Educational Banner */}
+      <div className="rounded-2xl bg-gradient-to-br from-sifa-green-50 to-sifa-gold-50 border border-sifa-gold-500/30 p-5 flex flex-col gap-3 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/20">
+        <p className="text-sm text-sifa-green-950 dark:text-sifa-green-100 leading-relaxed font-medium">
+          Kalender ini mengintegrasikan dua sistem penanggalan: Masehi (Gregorian) berdasarkan peredaran Bumi mengelilingi Matahari, dan Hijriah berdasarkan peredaran Bulan mengelilingi Bumi. Untuk penentuan bulan-bulan ibadah penting (Ramadan, Idulfitri, Iduladha), tersedia tab Kriteria Awal Bulan yang menghitung posisi hilal berdasarkan dua kriteria Muhammadiyah: Wujudul Hilal dan KHGT.
+        </p>
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-card-border">
         <button
@@ -205,12 +217,19 @@ export default function KalenderPage() {
           {/* Calendar Grid Card */}
           <Card className="lg:col-span-8 p-4 md:p-5">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100">
-                {currentDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
-              </h2>
-              <Badge variant="gold" className="font-mono">
-                {getTabularHijri(new Date(year, month, 1)).monthName} - {getTabularHijri(new Date(year, month, daysInMonth)).monthName} {getTabularHijri(currentDate).year} H
-              </Badge>
+              <div className="flex items-center gap-2">
+                <button onClick={goToPrevMonth} className="w-8 h-8 rounded-lg border border-card-border hover:bg-foreground/10 transition-colors flex items-center justify-center text-foreground/70 font-bold">‹</button>
+                <h2 className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100 min-w-[180px] text-center">
+                  {viewMonth.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
+                </h2>
+                <button onClick={goToNextMonth} className="w-8 h-8 rounded-lg border border-card-border hover:bg-foreground/10 transition-colors flex items-center justify-center text-foreground/70 font-bold">›</button>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={goToToday} className="text-xs px-3 py-1 rounded-lg border border-card-border hover:border-sifa-green-600 hover:text-sifa-green-900 transition-colors font-semibold text-foreground/60">Bulan Ini</button>
+                <Badge variant="gold" className="font-mono text-[10px]">
+                  {getTabularHijri(new Date(year, month, 1)).monthName} {getTabularHijri(viewMonth).year} H
+                </Badge>
+              </div>
             </div>
 
             {/* Days of Week Header */}
@@ -235,12 +254,12 @@ export default function KalenderPage() {
               <div className="flex flex-col gap-1.5 text-sm">
                 <div className="flex justify-between">
                   <span className="text-foreground/65">Masehi:</span>
-                  <span className="font-semibold">{currentDate.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  <span className="font-semibold">{today.current.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
                 <div className="flex justify-between border-t border-sifa-gold-500/20 pt-1.5 mt-1">
                   <span className="text-foreground/65">Hijriah (Tabular):</span>
                   <span className="font-bold text-sifa-green-900 dark:text-sifa-gold-500">
-                    {getTabularHijri(currentDate).day} {getTabularHijri(currentDate).monthName} {getTabularHijri(currentDate).year} H
+                    {getTabularHijri(today.current).day} {getTabularHijri(today.current).monthName} {getTabularHijri(today.current).year} H
                   </span>
                 </div>
               </div>

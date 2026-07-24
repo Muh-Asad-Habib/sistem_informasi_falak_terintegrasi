@@ -21,6 +21,7 @@ export default function WaktuSalatPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [showMonthly, setShowMonthly] = useState(false);
+  const [showFormula, setShowFormula] = useState(false);
 
   // Hitung jadwal
   const handleCalculate = (
@@ -174,6 +175,23 @@ export default function WaktuSalatPage() {
         <p className="text-sm text-foreground/60">
           Dapatkan jadwal waktu salat harian & 30 hari ke depan dengan preset kriteria Muhammadiyah/Kemenag.
         </p>
+      </div>
+
+      {/* Educational Intro Banner */}
+      <div className="rounded-2xl bg-gradient-to-r from-sifa-green-50 to-sifa-gold-50 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/20 border border-sifa-gold-500/30 p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-sifa-green-900 text-sifa-gold-500 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+            </svg>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 text-sm">Tentang Hisab Waktu Salat</span>
+            <p className="text-xs leading-relaxed text-foreground/70">
+              Waktu salat dalam Islam ditentukan berdasarkan <strong>posisi nyata Matahari</strong> di langit. Sistem ini menghitung <strong>Deklinasi Matahari (δ)</strong>, <strong>Equation of Time (e)</strong>, dan <strong>Sudut Waktu (t)</strong> untuk menentukan saat matahari mencapai ketinggian tertentu: Subuh (h = −20°), Terbit/Magrib (h ≈ −0.83° dikurangi koreksi dip), Asar (bayangan sama dengan tinggi benda + 1× panjangnya), dan Isya (h = −18°). Ikhtiyat menambah margin kehati-hatian agar umat tidak terlewat waktu salat.
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
@@ -390,6 +408,95 @@ export default function WaktuSalatPage() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Transparansi Hisab */}
+      {currentSchedule && (
+        <Card className="w-full flex flex-col gap-4">
+          <button
+            onClick={() => setShowFormula(!showFormula)}
+            className="flex items-center justify-between w-full font-heading text-lg font-semibold text-sifa-green-900 dark:text-sifa-green-100 hover:opacity-85 transition-opacity"
+          >
+            <span>Transparansi Hisab — Cara Menghitung Jadwal Salat</span>
+            <svg className={`w-5 h-5 transform transition-transform ${showFormula ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showFormula && (
+            <div className="flex flex-col gap-5 border-t border-card-border/60 pt-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-sifa-green-50 dark:bg-sifa-green-900/20 rounded-xl p-4 border border-sifa-green-200 dark:border-sifa-green-900/30 flex flex-col gap-2">
+                  <div className="text-[10px] font-bold text-sifa-green-700 dark:text-sifa-green-400 uppercase tracking-wide">1. Deklinasi Matahari (δ)</div>
+                  <p className="text-xs text-foreground/70 leading-relaxed">Sudut antara bidang ekliptika Matahari dan ekuator langit. Berubah setiap hari, bernilai ±23.5°. Menentukan &quot;musim&quot; dan kapan siang lebih panjang dari malam.</p>
+                  <div className="font-mono text-xs bg-card-bg border border-card-border rounded-lg p-2 mt-auto">
+                    δ = 23.45° × sin(360°/365 × (D + 284))
+                  </div>
+                </div>
+                <div className="bg-sifa-gold-50 dark:bg-sifa-gold-900/10 rounded-xl p-4 border border-sifa-gold-200 dark:border-sifa-gold-900/30 flex flex-col gap-2">
+                  <div className="text-[10px] font-bold text-sifa-gold-700 dark:text-sifa-gold-400 uppercase tracking-wide">2. Perata Waktu (e)</div>
+                  <p className="text-xs text-foreground/70 leading-relaxed">Selisih antara waktu matahari sejati dan waktu matahari rata-rata, akibat orbit bumi yang elips dan kemiringan sumbu. Nilainya ±16 menit.</p>
+                  <div className="font-mono text-xs bg-card-bg border border-card-border rounded-lg p-2 mt-auto">
+                    Transit = 12:00 − e + (120° − λ)/15
+                  </div>
+                </div>
+                <div className="bg-card-bg rounded-xl p-4 border border-card-border flex flex-col gap-2">
+                  <div className="text-[10px] font-bold text-foreground/50 uppercase tracking-wide">3. Sudut Waktu (t)</div>
+                  <p className="text-xs text-foreground/70 leading-relaxed">Sudut busur di langit antara meridian pengamat dan posisi Matahari. Digunakan untuk semua waktu salat selain Zuhur.</p>
+                  <div className="font-mono text-xs bg-background border border-card-border rounded-lg p-2 mt-auto">
+                    cos(t) = [sin(h) − sin(φ)·sin(δ)] / [cos(φ)·cos(δ)]
+                  </div>
+                </div>
+              </div>
+
+              {/* Table of h angles */}
+              <div className="rounded-xl border border-card-border overflow-hidden">
+                <div className="px-4 py-3 bg-foreground/5 border-b border-card-border">
+                  <span className="text-xs font-bold text-foreground/60 uppercase tracking-wide">Ketinggian Matahari (h) per Waktu Salat</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-card-border">
+                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Waktu</th>
+                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Metode ({metode})</th>
+                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Ketinggian h</th>
+                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Keterangan</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-card-border/40">
+                      {[
+                        { waktu: 'Imsak', h: '−20° + 10 menit', ket: '10 menit sebelum Subuh' },
+                        { waktu: 'Subuh', h: metode === 'Muhammadiyah' ? '−20°' : '−20°', ket: 'Fajar shadiq (astronomical twilight)' },
+                        { waktu: 'Terbit', h: '−0.833° − dip', ket: 'Koreksi refraksi + dip elevasi' },
+                        { waktu: 'Dhuha', h: '≈ +4.5°', ket: '16 menit setelah Terbit' },
+                        { waktu: 'Zuhur', h: 'Transit', ket: 'Matahari di meridian (kulminasi atas)' },
+                        { waktu: 'Asar', h: 'tan(h) = 1/tan(|φ−δ|) + 1', ket: 'Bayangan = panjang benda + 1× (Syafii)' },
+                        { waktu: 'Magrib', h: '−0.833° − dip', ket: 'Koreksi refraksi + dip elevasi' },
+                        { waktu: 'Isya', h: metode === 'Muhammadiyah' ? '−18°' : '−18°', ket: 'Syafak merah hilang (astronomical dusk)' },
+                      ].map((row, i) => (
+                        <tr key={i} className="hover:bg-foreground/[0.02]">
+                          <td className="py-2 px-4 font-bold text-sifa-green-900 dark:text-sifa-green-100">{row.waktu}</td>
+                          <td className="py-2 px-4 font-mono text-sifa-gold-600">{row.h}</td>
+                          <td className="py-2 px-4 font-mono text-sifa-gold-600">{row.h}</td>
+                          <td className="py-2 px-4 text-foreground/60">{row.ket}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Ikhtiyat explanation */}
+              <div className="rounded-xl bg-sifa-green-50 dark:bg-sifa-green-900/20 border border-sifa-green-200 dark:border-sifa-green-900/30 p-4">
+                <div className="font-bold text-sifa-green-900 dark:text-sifa-green-100 text-xs uppercase tracking-wide mb-2">Ikhtiyat (Kehati-hatian) = {ikhtiyat} Menit</div>
+                <p className="text-xs text-foreground/70 leading-relaxed">
+                  Ikhtiyat adalah margin kehati-hatian yang ditambahkan pada setiap awal waktu salat (kecuali Magrib dan Isya dikurangi). Nilai standar adalah 1–3 menit untuk menghindari kekeliruan akibat ketidaktepatan jam atau perbedaan lokasi dalam satu kota. SIFA saat ini menggunakan ikhtiyat {ikhtiyat} menit.
+                </p>
+              </div>
             </div>
           )}
         </Card>

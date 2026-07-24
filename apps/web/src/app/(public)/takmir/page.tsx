@@ -215,6 +215,27 @@ export default function TakmirPage() {
           </p>
         </div>
 
+        {/* Intro Banner */}
+        <div className="rounded-2xl bg-gradient-to-r from-sifa-green-50 to-sifa-gold-50 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/10 border border-sifa-gold-500/30 p-5">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-sifa-green-900 text-sifa-gold-500 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 text-sm">Tentang Mode Takmir</span>
+              <p className="text-xs leading-relaxed text-foreground/70">
+                Mode Takmir adalah panel khusus untuk <strong>pengelola/pengurus masjid (Takmir)</strong> yang ingin memverifikasi
+                apakah arah saf salat di masjidnya sudah selaras dengan <strong>arah kiblat sejati secara astronomis</strong>.
+                Masukkan koordinat GPS masjid dan azimuth arah saf saat ini, lalu sistem akan menghitung <strong>deviasi sudut</strong>
+                dan memberikan rekomendasi koreksi. Hasil verifikasi dapat dicetak sebagai <strong>Sertifikat Verifikasi Kiblat</strong>
+                resmi dari SIFA untuk keperluan dokumentasi masjid.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Form Verifikasi */}

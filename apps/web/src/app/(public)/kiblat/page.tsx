@@ -131,6 +131,24 @@ export default function KiblatPage() {
         </p>
       </div>
 
+      {/* Educational Intro Banner */}
+      <div className="rounded-2xl bg-gradient-to-r from-sifa-green-50 to-sifa-gold-50 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/20 border border-sifa-gold-500/30 p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-sifa-green-900 text-sifa-gold-500 flex items-center justify-center flex-shrink-0">
+            {/* compass SVG icon */}
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 10.5h.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H21M4.5 10.5H18V15H4.5v-4.5zM3.75 18h15A2.25 2.25 0 0021 15.75v-6a2.25 2.25 0 00-2.25-2.25h-15A2.25 2.25 0 001.5 9.75v6A2.25 2.25 0 003.75 18z" />
+            </svg>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 text-sm">Tentang Hisab Arah Kiblat</span>
+            <p className="text-xs leading-relaxed text-foreground/70">
+              Arah Kiblat adalah arah terdekat (busur terpendek pada lingkaran besar/great circle) dari suatu titik di bumi menuju <strong>Ka&apos;bah di Makkah Al-Mukarramah</strong> (21° 25&apos; 21&quot; LU, 39° 49&apos; 34&quot; BT). Karena bumi berbentuk bola, penentuan arah ini menggunakan <strong>Trigonometri Segitiga Bola</strong> (Spherical Trigonometry), bukan geometri bidang datar. Azimuth kiblat diukur dari Utara sejati searah jarum jam (0°–360° UTSB).
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Main Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
         
@@ -249,56 +267,78 @@ export default function KiblatPage() {
           </button>
 
           {showFormula && (
-            <div className="flex flex-col gap-4 text-sm leading-relaxed border-t border-card-border/60 pt-4">
-              <p>
-                Arah kiblat dihitung menggunakan trigonometri segitiga bola pada bola bumi sejati. Data-data yang digunakan:
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-background p-4 rounded-xl border border-card-border font-mono text-xs">
-                <div>
-                  <span className="font-bold block mb-1">Koordinat Ka&apos;bah:</span>
-                  Lintang (φ<sub>K</sub>) = 21° 25&apos; 21.04&quot; LU<br />
-                  Bujur (λ<sub>K</sub>) = 39° 49&apos; 34.33&quot; BT
+            <div className="flex flex-col gap-5 text-sm leading-relaxed border-t border-card-border/60 pt-4">
+              {/* Parameter Summary */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-sifa-green-50 dark:bg-sifa-green-900/20 rounded-xl p-3 border border-sifa-green-200 dark:border-sifa-green-900/40">
+                  <div className="text-[10px] font-bold text-sifa-green-700 dark:text-sifa-green-400 uppercase tracking-wide mb-1.5">Koordinat Ka&apos;bah (Tetap)</div>
+                  <div className="font-mono text-xs space-y-1">
+                    <div><span className="text-foreground/50">φ_K =</span> <span className="font-bold text-sifa-green-900 dark:text-sifa-green-100">21° 25&apos; 21.04&quot; LU</span></div>
+                    <div><span className="text-foreground/50">λ_K =</span> <span className="font-bold text-sifa-green-900 dark:text-sifa-green-100">39° 49&apos; 34.33&quot; BT</span></div>
+                  </div>
                 </div>
-                <div>
-                  <span className="font-bold block mb-1">Koordinat Tempat:</span>
-                  Lintang (φ<sub>T</sub>) = {latInput}°<br />
-                  Bujur (λ<sub>T</sub>) = {lngInput}°
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <span className="font-bold">Langkah 1: Menghitung Selisih Bujur (C)</span>
-                <p>
-                  Selisih bujur terpendek antara bujur tempat (λ<sub>T</sub>) dan bujur Ka&apos;bah (λ<sub>K</sub>):
-                </p>
-                <div className="bg-background p-3 rounded-lg border border-card-border font-mono text-xs text-center">
-                  C = |λ<sub>T</sub> - λ<sub>K</sub>| = {result.selisihBujurC.dms} ({result.selisihBujurC.decimal.toFixed(4)}°)
+                <div className="bg-sifa-gold-50 dark:bg-sifa-gold-900/10 rounded-xl p-3 border border-sifa-gold-200 dark:border-sifa-gold-900/30">
+                  <div className="text-[10px] font-bold text-sifa-gold-700 dark:text-sifa-gold-400 uppercase tracking-wide mb-1.5">Koordinat Lokasi Anda</div>
+                  <div className="font-mono text-xs space-y-1">
+                    <div><span className="text-foreground/50">φ_T =</span> <span className="font-bold text-sifa-gold-600">{latInput}°</span></div>
+                    <div><span className="text-foreground/50">λ_T =</span> <span className="font-bold text-sifa-gold-600">{lngInput}°</span></div>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="font-bold">Langkah 2: Menghitung Sudut Arah Kiblat (AQ)</span>
-                <p>
-                  Menggunakan rumus cotangen sudut arah kiblat dari Modul Ilmu Falak Bab II:
-                </p>
-                <div className="bg-background p-4 rounded-lg border border-card-border font-mono text-xs text-center leading-loose">
-                  cotan(AQ) = [tan(φ<sub>K</sub>) · cos(φ<sub>T</sub>) / sin(C)] - [sin(φ<sub>T</sub>) / tan(C)]<br />
-                  AQ = arccotan(cotan(AQ)) = {result.sudutArahKiblat.dms} ({result.sudutArahKiblat.decimal.toFixed(4)}°)
+              {/* Step 1 */}
+              <div className="flex gap-3">
+                <div className="w-7 h-7 rounded-full bg-sifa-green-900 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">1</div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <span className="font-bold text-sifa-green-900 dark:text-sifa-green-100">Selisih Bujur (C)</span>
+                  <p className="text-xs text-foreground/65">Hitung selisih bujur terpendek antara lokasi pengamat dan Ka&apos;bah:</p>
+                  <div className="bg-card-bg border border-card-border rounded-xl p-3 font-mono text-xs text-center">
+                    <span className="text-foreground/50">C = λ_T − λ_K = </span>
+                    <span className="text-sifa-gold-600 font-bold">{result.selisihBujurC.dms}</span>
+                    <span className="text-foreground/50"> ({result.selisihBujurC.decimal.toFixed(4)}°)</span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-2">
-                <span className="font-bold">Langkah 3: Konversi ke Azimuth Sejati</span>
-                <p>
-                  Berdasarkan arah mata angin (kuadran <strong>{result.kuadran}</strong>), azimuth sejati (UTSB) dihitung:
-                </p>
-                <div className="bg-background p-3 rounded-lg border border-card-border font-mono text-xs text-center">
-                  {result.kuadran === 'UB' && <>Azimuth = 360° - AQ = 360° - {result.sudutArahKiblat.decimal.toFixed(4)}° = {result.azimuthKiblat.dms}</>}
-                  {result.kuadran === 'UT' && <>Azimuth = AQ = {result.azimuthKiblat.dms}</>}
-                  {result.kuadran === 'ST' && <>Azimuth = 180° + AQ = {result.azimuthKiblat.dms}</>}
-                  {result.kuadran === 'SB' && <>Azimuth = 180° - AQ = {result.azimuthKiblat.dms}</>}
+              {/* Step 2 */}
+              <div className="flex gap-3">
+                <div className="w-7 h-7 rounded-full bg-sifa-green-900 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">2</div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <span className="font-bold text-sifa-green-900 dark:text-sifa-green-100">Sudut Arah Kiblat (AQ)</span>
+                  <p className="text-xs text-foreground/65">Rumus Cotangen Segitiga Bola dari Modul Ilmu Falak Bab II:</p>
+                  <div className="bg-card-bg border border-card-border rounded-xl p-3 font-mono text-xs leading-relaxed">
+                    <div className="text-center text-foreground/60 mb-1">cotan(AQ) = [tan(φ_K) · cos(φ_T) / sin(C)] − [sin(φ_T) / tan(C)]</div>
+                    <div className="border-t border-card-border/40 pt-2 text-center">
+                      <span className="text-foreground/50">AQ = </span>
+                      <span className="text-sifa-green-900 dark:text-sifa-green-100 font-bold text-sm">{result.sudutArahKiblat.dms}</span>
+                      <span className="text-foreground/50"> = {result.sudutArahKiblat.decimal.toFixed(4)}°</span>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="flex gap-3">
+                <div className="w-7 h-7 rounded-full bg-sifa-gold-500 text-sifa-green-950 flex items-center justify-center text-xs font-bold flex-shrink-0">3</div>
+                <div className="flex flex-col gap-2 flex-1">
+                  <span className="font-bold text-sifa-green-900 dark:text-sifa-green-100">Azimuth Sejati (UTSB)</span>
+                  <p className="text-xs text-foreground/65">Konversi AQ ke azimuth sejati berdasarkan kuadran <strong>{result.kuadran}</strong>:</p>
+                  <div className="bg-sifa-gold-50 dark:bg-sifa-gold-900/10 border border-sifa-gold-300 dark:border-sifa-gold-900/40 rounded-xl p-3 font-mono text-xs text-center">
+                    {result.kuadran === 'UB' && <><span className="text-foreground/60">Azimuth = 360° − AQ = 360° − {result.sudutArahKiblat.decimal.toFixed(2)}° = </span></>}
+                    {result.kuadran === 'UT' && <><span className="text-foreground/60">Azimuth = AQ = </span></>}
+                    {result.kuadran === 'ST' && <><span className="text-foreground/60">Azimuth = 180° + AQ = </span></>}
+                    {result.kuadran === 'SB' && <><span className="text-foreground/60">Azimuth = 180° − AQ = </span></>}
+                    <span className="text-sifa-gold-600 font-bold text-base">{result.azimuthKiblat.dms}</span>
+                    <span className="text-foreground/50"> ({result.azimuthKiblat.decimal.toFixed(2)}°)</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Result Summary */}
+              <div className="rounded-xl bg-gradient-to-r from-sifa-green-900 to-sifa-green-800 text-white p-4 text-center">
+                <div className="text-xs opacity-70 mb-1">Kesimpulan: Arah Kiblat dari lokasi ini</div>
+                <div className="font-heading text-2xl font-bold text-sifa-gold-500">{result.azimuthKiblat.dms}</div>
+                <div className="text-xs opacity-80 mt-1">dari Utara sejati ({result.azimuthKiblat.decimal.toFixed(2)}° UTSB) · Kuadran {result.kuadran}</div>
               </div>
             </div>
           )}

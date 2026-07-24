@@ -1,209 +1,407 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import { hitungArahKiblat } from 'hisab-core';
 
-import { MASJID_DATA } from '@/data/masjid';
-
-// Rumus Haversine untuk kalkulasi jarak toposentris dalam km
-function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; // Radius bumi dalam km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+// ── Types ────────────────────────────────────────────────────────────────────
+interface OsmMosque {
+  id: number;
+  lat: number;
+  lng: number;
+  name: string;
+  address: string;
+  distance: number; // km
+  qiblaAzimuth: number; // degrees
 }
 
-export default function DirektoriPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // State untuk Lokasi User & GPS
-  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
-  const [loadingGps, setLoadingGps] = useState(true);
-  const [gpsError, setGpsError] = useState<string | null>(null);
+// ── Haversine distance (km) ──────────────────────────────────────────────────
+function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
-  // Memicu pencarian lokasi terdekat secara otomatis saat pertama kali dibuka
-  useEffect(() => {
-    detectLocation();
-  }, []);
+// ── Fetch mosques from Overpass API (OpenStreetMap) ──────────────────────────
+async function fetchMosquesFromOSM(lat: number, lng: number, radiusKm: number): Promise<OsmMosque[]> {
+  const radiusM = radiusKm * 1000;
+  const query = `
+    [out:json][timeout:25];
+    (
+      node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${lat},${lng});
+      way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${lat},${lng});
+    );
+    out center tags;
+  `;
 
-  const detectLocation = () => {
-    setLoadingGps(true);
-    setGpsError(null);
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLoc({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-          setLoadingGps(false);
-        },
-        (err) => {
-          console.error(err);
-          setGpsError('Gagal mengakses GPS HP Anda. Pastikan izin lokasi diaktifkan.');
-          setLoadingGps(false);
-        },
-        { timeout: 8000 }
-      );
-    } else {
-      setGpsError('Browser Anda tidak mendukung fitur Geolocation GPS.');
-      setLoadingGps(false);
-    }
-  };
-
-  // Fallback ke lokasi Unismuh Makassar jika GPS ditolak
-  const handleUseDefaultLoc = () => {
-    setUserLoc({
-      lat: -5.182778,
-      lng: 119.441083,
-    });
-    setGpsError(null);
-    setLoadingGps(false);
-  };
-
-  // Kalkulasi jarak & saring masjid terdekat dalam range 10 KM
-  const processedMasjids = MASJID_DATA.map((m) => {
-    const distance = userLoc ? getDistance(userLoc.lat, userLoc.lng, m.lat, m.lng) : undefined;
-    return { ...m, distance };
-  })
-  .filter((m) => {
-    // Saring hanya masjid dengan jarak <= 10 km
-    if (m.distance === undefined) return false;
-    return m.distance <= 10;
+  const response = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `data=${encodeURIComponent(query)}`,
   });
 
-  // Urutkan dari yang paling dekat
-  processedMasjids.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+  if (!response.ok) throw new Error(`Overpass API error: ${response.status}`);
 
-  // Terapkan filter kata kunci pencarian
-  const filteredMasjid = processedMasjids.filter((m) =>
-    m.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.alamat.toLowerCase().includes(searchTerm.toLowerCase())
+  const data = await response.json();
+
+  const mosques: OsmMosque[] = (data.elements as Array<{
+    id: number;
+    lat?: number;
+    lon?: number;
+    center?: { lat: number; lon: number };
+    tags?: Record<string, string>;
+  }>)
+    .filter((el) => el.lat !== undefined || el.center !== undefined)
+    .map((el) => {
+      const mLat = el.lat ?? el.center!.lat;
+      const mLng = el.lon ?? el.center!.lon;
+      const tags = el.tags ?? {};
+
+      const name =
+        tags['name:id'] || tags['name'] || tags['name:en'] || 'Masjid/Musala';
+
+      // Build address from OSM tags
+      const addressParts = [
+        tags['addr:street'] && tags['addr:housenumber']
+          ? `${tags['addr:street']} No. ${tags['addr:housenumber']}`
+          : tags['addr:street'],
+        tags['addr:suburb'] || tags['addr:village'] || tags['addr:hamlet'],
+        tags['addr:city'] || tags['addr:district'],
+      ].filter(Boolean);
+      const address = addressParts.length > 0
+        ? addressParts.join(', ')
+        : `${mLat.toFixed(5)}, ${mLng.toFixed(5)}`;
+
+      const distance = haversine(lat, lng, mLat, mLng);
+      let qiblaAzimuth = 0;
+      try {
+        qiblaAzimuth = hitungArahKiblat({ lat: mLat, lng: mLng }).azimuthKiblat.decimal;
+      } catch { /* ignore */ }
+
+      return { id: el.id, lat: mLat, lng: mLng, name, address, distance, qiblaAzimuth };
+    })
+    .sort((a, b) => a.distance - b.distance);
+
+  return mosques;
+}
+
+// ── Radius options ─────────────────────────────────────────────────────────
+const RADIUS_OPTIONS = [
+  { label: '1 km', value: 1 },
+  { label: '3 km', value: 3 },
+  { label: '5 km', value: 5 },
+  { label: '10 km', value: 10 },
+];
+
+// ── Component ─────────────────────────────────────────────────────────────────
+export default function DirektoriPage() {
+  const [userLoc, setUserLoc] = useState<{ lat: number; lng: number } | null>(null);
+  const [locationPhase, setLocationPhase] = useState<'gps' | 'fetching' | 'done' | 'error'>('gps');
+  const [gpsError, setGpsError] = useState<string | null>(null);
+
+  const [mosques, setMosques] = useState<OsmMosque[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  const [radius, setRadius] = useState(5);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // ── Fetch mosques from OSM when location + radius are ready ────────────────
+  const loadMosques = useCallback(async (lat: number, lng: number, r: number) => {
+    setLocationPhase('fetching');
+    setFetchError(null);
+
+    const cacheKey = `osm_mosques_${lat.toFixed(3)}_${lng.toFixed(3)}_${r}`;
+    try {
+      // Check sessionStorage cache (5-minute TTL)
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, ts } = JSON.parse(cached) as { data: OsmMosque[]; ts: number };
+        if (Date.now() - ts < 5 * 60 * 1000) {
+          setMosques(data);
+          setLocationPhase('done');
+          return;
+        }
+      }
+    } catch { /* ignore storage errors */ }
+
+    try {
+      const data = await fetchMosquesFromOSM(lat, lng, r);
+      setMosques(data);
+      setLocationPhase('done');
+      try {
+        sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
+      } catch { /* ignore */ }
+    } catch (e) {
+      console.error(e);
+      setFetchError('Gagal mengambil data masjid dari OpenStreetMap. Periksa koneksi internet Anda dan coba lagi.');
+      setLocationPhase('error');
+    }
+  }, []);
+
+  // ── Auto GPS on mount ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setGpsError('Browser Anda tidak mendukung fitur Geolocation.');
+      setLocationPhase('error');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLoc(loc);
+        loadMosques(loc.lat, loc.lng, radius);
+      },
+      (err) => {
+        console.error(err);
+        setGpsError(err.code === 1
+          ? 'Izin akses lokasi ditolak. Aktifkan izin lokasi di browser Anda, lalu coba lagi.'
+          : 'Gagal mendeteksi lokasi GPS. Pastikan GPS aktif di perangkat Anda.');
+        setLocationPhase('error');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Reload when radius changes ──────────────────────────────────────────────
+  useEffect(() => {
+    if (userLoc) loadMosques(userLoc.lat, userLoc.lng, radius);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [radius]);
+
+  const handleUseUnismuh = () => {
+    const loc = { lat: -5.182778, lng: 119.441083 };
+    setUserLoc(loc);
+    setGpsError(null);
+    loadMosques(loc.lat, loc.lng, radius);
+  };
+
+  const handleRetryGps = () => {
+    setLocationPhase('gps');
+    setGpsError(null);
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLoc(loc);
+        loadMosques(loc.lat, loc.lng, radius);
+      },
+      (err) => {
+        setGpsError(err.message);
+        setLocationPhase('error');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const filtered = mosques.filter((m) =>
+    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.address.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const formatDist = (d: number) =>
+    d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(2)} km`;
+
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto py-4">
+
       {/* Header */}
       <div className="text-center md:text-left flex flex-col gap-2">
         <h1 className="font-heading text-3xl font-bold text-sifa-green-900 dark:text-sifa-green-100">
           Direktori Masjid Terdekat
         </h1>
         <p className="text-sm text-foreground/60">
-          Menampilkan daftar masjid mitra AUM dalam radius <b>10 km terdekat</b> dari lokasi Anda saat ini.
+          Temukan masjid dan musala di sekitar lokasi Anda menggunakan data real-time OpenStreetMap.
         </p>
       </div>
 
-      {/* Loading GPS state */}
-      {loadingGps && (
-        <Card className="p-8 flex flex-col items-center justify-center gap-4 text-center border border-card-border/60 bg-card-bg/40 backdrop-blur-sm">
-          <div className="w-10 h-10 border-4 border-sifa-green-600 border-t-transparent rounded-full animate-spin" />
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-bold text-sifa-green-900 dark:text-sifa-green-100">Mencari Lokasi GPS Anda...</span>
-            <span className="text-xs text-foreground/50">Izinkan akses lokasi pada browser untuk mendapatkan masjid terdekat secara otomatis.</span>
+      {/* Intro Banner */}
+      <div className="rounded-2xl bg-gradient-to-r from-sifa-green-50 to-sifa-gold-50 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/10 border border-sifa-gold-500/30 p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-sifa-green-900 text-sifa-gold-500 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
           </div>
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            onClick={handleUseDefaultLoc}
-            className="mt-2 text-xs font-bold px-4 py-2 border border-sifa-green-900/20 text-sifa-green-900 dark:text-sifa-green-100"
-          >
-            Gunakan Lokasi Kampus Unismuh (Default)
+          <div className="flex flex-col gap-1">
+            <span className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 text-sm">Tentang Direktori Masjid</span>
+            <p className="text-xs leading-relaxed text-foreground/70">
+              Direktori ini menampilkan <strong>masjid dan musala terdekat</strong> dari lokasi GPS Anda secara <em>real-time</em> melalui data komunitas <strong>OpenStreetMap</strong> (OSM) — tidak memerlukan API key berbayar dan selalu diperbarui oleh komunitas. Setiap masjid dilengkapi informasi <strong>jarak Haversine</strong> dan tautan langsung ke kalkulator <strong>Arah Kiblat</strong> dan <strong>Jadwal Salat</strong> spesifik untuk koordinat masjid tersebut.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* GPS Loading State */}
+      {locationPhase === 'gps' && (
+        <Card className="p-10 flex flex-col items-center gap-5 text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-sifa-green-200 border-t-sifa-green-600 rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-6 h-6 text-sifa-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100">Mendeteksi Lokasi GPS Anda...</span>
+            <span className="text-xs text-foreground/50 max-w-sm">Aktifkan izin lokasi di browser untuk mendapatkan masjid terdekat secara otomatis</span>
+          </div>
+          <Button variant="secondary" size="sm" onClick={handleUseUnismuh} className="text-xs font-bold px-4 py-2 border border-sifa-green-900/20 text-sifa-green-900 dark:text-sifa-green-100">
+            Gunakan Lokasi Unismuh (Default)
           </Button>
         </Card>
       )}
 
-      {/* Gps Error / Ditolak state */}
-      {!loadingGps && gpsError && !userLoc && (
-        <Card className="p-6 flex flex-col items-center gap-4 text-center border border-red-500/20 bg-red-500/5">
-          <div className="text-xl">⚠️</div>
+      {/* Fetching OSM State */}
+      {locationPhase === 'fetching' && (
+        <Card className="p-10 flex flex-col items-center gap-5 text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-sifa-gold-200 border-t-sifa-gold-500 rounded-full animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center text-xl">🕌</div>
+          </div>
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-bold text-red-600 dark:text-red-400">Akses Lokasi Diblokir atau Bermasalah</span>
+            <span className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100">Memuat Data Masjid dari OpenStreetMap...</span>
+            <span className="text-xs text-foreground/50">Mengambil masjid dalam radius {radius} km dari lokasi Anda</span>
+          </div>
+        </Card>
+      )}
+
+      {/* GPS/Fetch Error State */}
+      {locationPhase === 'error' && (
+        <Card className="p-6 flex flex-col items-center gap-5 text-center border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20">
+          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center text-2xl">⚠️</div>
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-bold text-red-700 dark:text-red-400">
+              {gpsError ?? fetchError ?? 'Terjadi kesalahan'}
+            </span>
             <span className="text-xs text-foreground/60 max-w-md">
-              Aplikasi memerlukan izin GPS Anda untuk menyaring masjid dalam radius 10 KM.
+              Pastikan izin lokasi dan koneksi internet aktif, lalu coba lagi.
             </span>
           </div>
           <div className="flex gap-3">
-            <Button onClick={detectLocation} className="text-xs font-bold bg-sifa-green-900 text-white hover:bg-sifa-green-800">
-              Coba Lagi
+            <Button onClick={handleRetryGps} className="text-xs font-bold bg-sifa-green-900 text-white hover:bg-sifa-green-800">
+              Coba Lagi GPS
             </Button>
-            <Button onClick={handleUseDefaultLoc} variant="secondary" className="text-xs font-bold">
-              Gunakan Lokasi Kampus Unismuh (Default)
+            <Button onClick={handleUseUnismuh} variant="secondary" className="text-xs font-bold border border-card-border">
+              Gunakan Lokasi Unismuh
             </Button>
           </div>
         </Card>
       )}
 
-      {/* Tampilan utama jika lokasi sudah didapatkan */}
-      {userLoc && !loadingGps && (
+      {/* Main Content: done */}
+      {locationPhase === 'done' && userLoc && (
         <>
-          {/* Search Input */}
-          <div className="flex items-center gap-3 bg-card-bg border border-card-border p-3 rounded-2xl">
-            <svg className="w-5 h-5 text-foreground/45 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Cari nama masjid atau alamat terdekat..."
-              className="w-full text-sm bg-transparent focus:outline-none text-foreground placeholder:text-foreground/40"
-            />
+          {/* Controls Bar */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Search */}
+            <div className="flex items-center gap-3 bg-card-bg border border-card-border p-3 rounded-xl flex-1">
+              <svg className="w-4 h-4 text-foreground/45 ml-1 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Cari nama masjid atau alamat..."
+                className="w-full text-sm bg-transparent focus:outline-none text-foreground placeholder:text-foreground/40"
+              />
+            </div>
+
+            {/* Radius selector */}
+            <div className="flex gap-1.5">
+              {RADIUS_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setRadius(opt.value)}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold border transition-all ${
+                    radius === opt.value
+                      ? 'bg-sifa-green-900 text-white border-sifa-green-900'
+                      : 'border-card-border bg-card-bg text-foreground/70 hover:border-sifa-green-600'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Info Jumlah Hasil */}
-          <div className="flex justify-between items-center text-xs text-foreground/50 px-1 -mt-2">
-            <span>Menampilkan {filteredMasjid.length} masjid dalam radius 10 KM</span>
-            <button onClick={detectLocation} className="text-sifa-green-900 dark:text-sifa-green-400 hover:underline flex items-center gap-1 font-bold">
-              🔄 Perbarui Lokasi
+          {/* Stats bar */}
+          <div className="flex justify-between items-center text-xs text-foreground/50 px-1 -mt-4">
+            <span>
+              <span className="font-bold text-sifa-green-900 dark:text-sifa-green-100">{filtered.length}</span> masjid ditemukan
+              {' '}dalam radius {radius} km
+              {userLoc && (
+                <span className="ml-1 text-foreground/40">
+                  ({userLoc.lat.toFixed(4)}°, {userLoc.lng.toFixed(4)}°)
+                </span>
+              )}
+            </span>
+            <button
+              onClick={() => userLoc && loadMosques(userLoc.lat, userLoc.lng, radius)}
+              className="text-sifa-green-700 dark:text-sifa-green-400 hover:underline font-bold flex items-center gap-1"
+            >
+              🔄 Perbarui
             </button>
           </div>
 
-          {/* Masjid Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredMasjid.map((m) => (
-              <Card key={m.id} className="p-5 flex flex-col justify-between gap-4 bg-card-bg border border-card-border/50 hover:border-sifa-green-900/30 hover:shadow-lg transition-all duration-300">
-                <div className="flex flex-col gap-2">
+          {/* Mosque Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {filtered.map((m, idx) => (
+              <Card
+                key={m.id}
+                className="p-5 flex flex-col justify-between gap-4 hover:border-sifa-green-600/40 hover:shadow-lg transition-all duration-300"
+              >
+                <div className="flex flex-col gap-2.5">
                   <div className="flex justify-between items-start gap-3">
-                    <h3 className="font-heading font-extrabold text-base text-sifa-green-900 dark:text-sifa-green-100 leading-tight">
-                      {m.nama}
-                    </h3>
-                    {m.distance !== undefined && (
-                      <Badge variant="green" className="bg-sifa-green-900 text-white font-extrabold text-[9.5px] whitespace-nowrap px-2 py-0.5 shrink-0 shadow-sm">
-                        📍 {m.distance < 1 
-                          ? `${Math.round(m.distance * 1000)} m` 
-                          : `${m.distance.toFixed(2)} km`}
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {idx < 3 && (
+                        <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold flex-shrink-0 ${
+                          idx === 0 ? 'bg-sifa-gold-500 text-sifa-green-950' :
+                          idx === 1 ? 'bg-foreground/20 text-foreground' :
+                          'bg-sifa-green-100 text-sifa-green-900'
+                        }`}>
+                          {idx + 1}
+                        </span>
+                      )}
+                      <h3 className="font-heading font-extrabold text-sm text-sifa-green-900 dark:text-sifa-green-100 leading-tight">
+                        {m.name}
+                      </h3>
+                    </div>
+                    <Badge variant="green" className="bg-sifa-green-900 text-white font-extrabold text-[9px] whitespace-nowrap shrink-0">
+                      📍 {formatDist(m.distance)}
+                    </Badge>
                   </div>
 
-                  {/* Lokasi / Alamat */}
-                  <p className="text-xs text-foreground/70 leading-relaxed font-medium">
-                    {m.alamat}
+                  <p className="text-xs text-foreground/65 leading-relaxed">
+                    {m.address}
                   </p>
 
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="green" className="uppercase text-[8px] font-bold tracking-wider">
-                      {m.status_verifikasi_kiblat.replace('_', ' ')}
-                    </Badge>
+                  <div className="flex items-center gap-2 text-[10px] font-mono text-foreground/50">
+                    <span>🧭 Kiblat: <span className="text-sifa-gold-600 font-bold">{m.qiblaAzimuth.toFixed(1)}°</span></span>
+                    <span>·</span>
+                    <span>{m.lat.toFixed(4)}°, {m.lng.toFixed(4)}°</span>
                   </div>
                 </div>
 
-                {/* Tombol aksi cepat */}
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-card-border/20">
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2 pt-2 border-t border-card-border/30">
                   <Link href={`/kiblat?lat=${m.lat}&lng=${m.lng}`}>
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="text-[10px] font-bold py-1.5 px-3 border border-sifa-green-900/20 text-sifa-green-900 hover:bg-sifa-green-900 hover:text-white transition-colors"
+                      className="text-[10px] font-bold py-1.5 px-3 border border-sifa-green-900/20 text-sifa-green-900 dark:text-sifa-green-100 hover:bg-sifa-green-900 hover:text-white transition-colors"
                     >
                       Kompas Kiblat
                     </Button>
@@ -217,25 +415,54 @@ export default function DirektoriPage() {
                       Jadwal Salat
                     </Button>
                   </Link>
-                  <Link href={`/layar-masjid/${m.id}`}>
+                  <a
+                    href={`https://www.openstreetmap.org/?mlat=${m.lat}&mlon=${m.lng}#map=18/${m.lat}/${m.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="text-[10px] font-bold py-1.5 px-3 border border-emerald-600/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white transition-colors"
+                      className="text-[10px] font-bold py-1.5 px-3 border border-card-border text-foreground/70 hover:border-sifa-green-600 transition-colors"
                     >
-                      Layar TV
+                      Peta OSM ↗
                     </Button>
-                  </Link>
+                  </a>
                 </div>
               </Card>
             ))}
 
-            {filteredMasjid.length === 0 && (
-              <div className="col-span-full text-center py-12 text-foreground/40 text-sm">
-                Tidak ada masjid yang cocok dengan pencarian Anda.
+            {filtered.length === 0 && (
+              <div className="col-span-full py-16 flex flex-col items-center gap-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center text-3xl">🕌</div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-heading font-bold text-foreground/60">Tidak ada masjid ditemukan</span>
+                  <span className="text-xs text-foreground/40">
+                    {searchTerm
+                      ? `Tidak ada hasil untuk "${searchTerm}"`
+                      : `Tidak ada masjid dalam radius ${radius} km. Coba perluas radius pencarian.`}
+                  </span>
+                </div>
+                {!searchTerm && radius < 10 && (
+                  <button
+                    onClick={() => setRadius(Math.min(radius + 2, 10))}
+                    className="text-xs font-bold text-sifa-green-700 dark:text-sifa-green-400 hover:underline"
+                  >
+                    Perluas ke {radius + 2} km →
+                  </button>
+                )}
               </div>
             )}
           </div>
+
+          {/* Attribution */}
+          <p className="text-center text-[10px] text-foreground/30">
+            Data masjid dari{' '}
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline">
+              © OpenStreetMap contributors
+            </a>
+            {' '}· Jarak dihitung dengan formula Haversine · Arah Kiblat dari hisab-core SIFA
+          </p>
         </>
       )}
     </div>
