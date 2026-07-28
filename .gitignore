@@ -31,3 +31,8 @@ next-env.d.ts
 
 # temp files
 _modul_text.txt
+
+# log dev server & tunnel lokal (cloudflared)
+dev.log
+tunnel.log
+
