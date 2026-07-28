@@ -13,6 +13,15 @@
 5. Uji manual di perangkat Android kelas menengah-bawah + audit kontras WCAG AA mode Layar Masjid.
 6. Penyesuaian Ramadan untuk preset Umm al-Qura (Isya 120 menit) belum diterapkan otomatis.
 
+## Perbaikan UI Mobile & Peta (sesi 28 Juli 2026 — bagian 3)
+- **Peta kosong di HP — akar masalah ditemukan:** MapLibre menghitung ukuran kanvas saat inisialisasi, sedangkan tinggi kartu induk belum final di layout mobile → kanvas 0px (kotak putih, hanya legenda yang tampak). Perbaikan: tinggi peta kini dikirim sebagai **piksel** (`tinggiPx`), bukan kelas Tailwind, plus `ResizeObserver` + `map.resize()` berlapis (`load`, `requestAnimationFrame`, 250 ms, 800 ms) dan listener `orientationchange`.
+- **Deteksi WebGL + fallback.** Perangkat tanpa WebGL langsung dialihkan ke Google Maps embed, tidak dibiarkan blank.
+- **Kombinasi Google Maps + OpenStreetMap.** Peta punya pemilih sumber: OSM/MapLibre (marker 🕌/🛐 per masjid, popup jarak + azimuth kiblat + tautan rute) atau Google Maps embed (tanpa API key). Popup masjid kini juga memuat tautan "Rute Google Maps".
+- **Komponen bersama baru:** `PemilihMetode` (dropdown kriteria + mazhab Asar, dirender dari `PARAMETER_METODE`) dan `CaraPerhitungan` (panel langkah hisab; `langkahJadwalSalat()` 11 langkah untuk waktu salat, `langkahKriteriaHilal()` 5 langkah untuk awal bulan).
+- **Direktori masjid:** ada pemilih metode & mazhab; tiap kartu masjid menampilkan jadwal salat **untuk koordinat masjid itu** (zona waktu dari bujur) + tombol "Cara perhitungan". Dibatasi 30 entri teratas agar HP kelas bawah tidak berat.
+- **Kalender:** tab bisa digeser (label tidak lagi bertumpuk), grid kalender punya scroll mendatar `min-w-[560px]`, header bulan `flex-wrap` supaya badge Hijriah tidak keluar layar, ada **filter kriteria** (centang kriteria mana yang ditampilkan) dan tombol cara perhitungan per kriteria.
+- **Jadwal salat:** memakai `PemilihMetode` + panel `CaraPerhitungan`; tabel perbandingan metode kini menjadi **kartu bertumpuk di HP** (`sm:hidden`) dan tetap tabel di layar lebar.
+
 ## Fitur Baru (sesi 28 Juli 2026 — bagian 2: multi-metode & peta)
 - **Waktu salat kini punya 10 preset kriteria**, bukan 2: Muhammadiyah, Kemenag, MABIMS, NU, MWL, ISNA, Umm al-Qura, Egypt, Karachi, MUIS Singapura. Tiap preset menyimpan `label`, `wilayah`, `sumber`, dan `statusRujukan` (`terverifikasi` / `perlu_konfirmasi`) yang ikut tampil di UI supaya tidak ada angka tanpa asal-usul.
 - **Isya berbasis interval** ditangani eksplisit (`isyaMenitSetelahMagrib`, dipakai Umm al-Qura 90 menit) — bukan dipaksakan lewat ketinggian matahari palsu.

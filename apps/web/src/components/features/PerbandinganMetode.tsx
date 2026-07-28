@@ -103,7 +103,83 @@ export default function PerbandinganMetode({
         </div>
       )}
 
-      <div className="overflow-x-auto -mx-2 px-2">
+      {/* ── Tampilan HP: kartu bertumpuk (tabel lebar tidak nyaman di layar kecil) ── */}
+      <div className="flex flex-col gap-2.5 sm:hidden">
+        {baris.map((b) => {
+          const acuan = b.metode === metodeAcuan;
+          const dibuka = terbuka === b.metode;
+          return (
+            <div
+              key={b.metode}
+              className={`rounded-xl border p-3 flex flex-col gap-2 ${
+                acuan
+                  ? 'border-sifa-green-600/50 bg-sifa-green-50/60 dark:bg-sifa-green-900/15'
+                  : 'border-card-border/60 bg-foreground/[0.02]'
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => setTerbuka(dibuka ? null : b.metode)}
+                aria-expanded={dibuka}
+                className="flex items-start justify-between gap-2 text-left"
+              >
+                <span className="font-heading font-extrabold text-xs text-sifa-green-900 dark:text-sifa-green-100 leading-snug">
+                  {b.parameter.label}
+                  {b.parameter.statusRujukan === 'perlu_konfirmasi' && (
+                    <span title="Rujukan belum diverifikasi"> ⚠️</span>
+                  )}
+                </span>
+                {acuan ? (
+                  <Badge variant="green" className="text-[8px] uppercase font-extrabold shrink-0">Acuan</Badge>
+                ) : (
+                  <span className="text-[9px] font-bold text-foreground/40 shrink-0">
+                    {dibuka ? 'Tutup' : 'Detail'}
+                  </span>
+                )}
+              </button>
+
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { l: 'Subuh', v: b.jadwal.subuh, d: b.selisihMenit.subuh },
+                  { l: 'Zuhur', v: b.jadwal.zuhur, d: b.selisihMenit.zuhur },
+                  { l: 'Asar', v: b.jadwal.asar, d: b.selisihMenit.asar },
+                  { l: 'Magrib', v: b.jadwal.magrib, d: b.selisihMenit.magrib },
+                  { l: 'Isya', v: b.jadwal.isya, d: b.selisihMenit.isya },
+                  { l: 'Terbit', v: b.jadwal.terbit, d: 0 },
+                ].map((w) => (
+                  <div
+                    key={w.l}
+                    className="flex flex-col items-center rounded-lg bg-card-bg border border-card-border/40 py-1.5"
+                  >
+                    <span className="text-[8px] font-bold uppercase text-foreground/40">{w.l}</span>
+                    <span className="font-mono text-[11px] font-extrabold text-foreground/85">{w.v}</span>
+                    <span className={`text-[8px] font-bold ${warnaSelisih(w.d)}`}>{formatSelisih(w.d)}</span>
+                  </div>
+                ))}
+              </div>
+
+              {dibuka && (
+                <div className="flex flex-col gap-1 text-[10px] leading-relaxed border-t border-card-border/40 pt-2">
+                  <span className="font-mono text-foreground/70">
+                    h Subuh {b.parameter.hSubuh}° · h Isya{' '}
+                    {b.jadwal.rincian.isyaBerbasisInterval
+                      ? `Magrib + ${b.parameter.isyaMenitSetelahMagrib} mnt`
+                      : `${b.parameter.hIsya}°`}
+                  </span>
+                  <span className="text-foreground/60"><strong>Dipakai di:</strong> {b.parameter.wilayah}</span>
+                  <span className="text-foreground/60"><strong>Sumber:</strong> {b.parameter.sumber}</span>
+                  {b.parameter.catatan && (
+                    <span className="text-foreground/45 italic">{b.parameter.catatan}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Tampilan layar lebar: tabel ── */}
+      <div className="overflow-x-auto -mx-2 px-2 hidden sm:block">
         <table className="w-full text-xs border-collapse min-w-[640px]">
           <thead>
             <tr className="border-b border-card-border bg-foreground/5">

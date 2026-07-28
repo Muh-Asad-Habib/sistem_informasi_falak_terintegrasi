@@ -16,7 +16,7 @@ import { ambilMasjidOsmDenganCache, MasjidOsm } from '@/lib/osm';
 const PetaMasjidTerdekat = dynamic(() => import('@/components/features/PetaMasjidTerdekat'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-64 rounded-xl border border-card-border/50 bg-foreground/[0.03] flex items-center justify-center">
+    <div className="w-full h-[260px] rounded-xl border border-card-border/50 bg-foreground/[0.03] flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-sifa-green-600 border-t-transparent rounded-full animate-spin" />
     </div>
   ),
@@ -287,11 +287,11 @@ export default function Home() {
         <div className="lg:col-span-7 flex flex-col gap-6">
           
           {/* Card 3: Informasi Lokasi + Peta Masjid Terdekat */}
-          <Card className="p-6 flex flex-col gap-4 border-card-border/50 relative overflow-hidden bg-card-bg">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-              <div className="flex flex-col gap-2">
+          <Card className="p-4 sm:p-6 flex flex-col gap-4 border-card-border/50 relative overflow-hidden bg-card-bg">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between sm:items-center">
+              <div className="flex flex-col gap-2 min-w-0">
                 <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-sifa-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 text-sifa-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   </svg>
                   <h3 className="font-heading font-extrabold text-sm text-foreground/80">
@@ -299,37 +299,37 @@ export default function Home() {
                   </h3>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-lg font-extrabold text-sifa-green-900 dark:text-sifa-green-100">
+                  <span className="text-base sm:text-lg font-extrabold text-sifa-green-900 dark:text-sifa-green-100 truncate">
                     {locationName}
                   </span>
-                  <span className="text-xs text-foreground/50 font-medium">
+                  <span className="text-[11px] sm:text-xs text-foreground/50 font-medium font-mono">
                     {coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}
                   </span>
                 </div>
               </div>
 
-              <div className="flex flex-col items-start sm:items-end gap-1.5">
+              <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 shrink-0">
                 <Button
                   onClick={detectLocation}
                   variant="secondary"
-                  className="text-[10px] font-bold py-1.5 px-3 border border-card-border/50 hover:bg-card-border/20 flex items-center gap-1.5"
+                  className="text-[10px] font-bold py-1.5 px-3 border border-card-border/50 hover:bg-card-border/20 flex items-center gap-1.5 whitespace-nowrap"
                 >
                   🔄 Perbarui Lokasi
                 </Button>
-                <span className="text-[10px] font-semibold text-foreground/45">
+                <span className="text-[10px] font-semibold text-foreground/45 text-right">
                   {statusMasjid === 'memuat' && 'Memuat masjid sekitar…'}
-                  {statusMasjid === 'siap' && `${masjidTerdekat.length} masjid/musala dalam ${RADIUS_PETA_KM} km`}
-                  {statusMasjid === 'gagal' && 'Data masjid tidak tersedia (offline)'}
+                  {statusMasjid === 'siap' && `${masjidTerdekat.length} dalam ${RADIUS_PETA_KM} km`}
+                  {statusMasjid === 'gagal' && 'Data masjid tidak tersedia'}
                 </span>
               </div>
             </div>
 
-            {/* Peta interaktif OSM — marker 🕌 masjid & 🛐 musala terdekat */}
+            {/* Peta interaktif — bisa ditukar antara OpenStreetMap & Google Maps */}
             <PetaMasjidTerdekat
               lat={coords.lat}
               lng={coords.lng}
               masjid={masjidTerdekat}
-              tinggiKelas="h-64"
+              tinggiPx={260}
             />
 
             {/* Tiga masjid terdekat sebagai pintasan */}

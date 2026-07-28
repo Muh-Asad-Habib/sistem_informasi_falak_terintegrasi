@@ -5,7 +5,9 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import PrayerCountdown from '@/components/features/PrayerCountdown';
 import PerbandinganMetode from '@/components/features/PerbandinganMetode';
-import { hitungJadwalSalat, PrayerTimesResult, HisabMetode, MazhabAsar, PARAMETER_METODE, daftarMetode } from 'hisab-core';
+import PemilihMetode from '@/components/features/PemilihMetode';
+import CaraPerhitungan, { langkahJadwalSalat } from '@/components/features/CaraPerhitungan';
+import { hitungJadwalSalat, PrayerTimesResult, HisabMetode, MazhabAsar, daftarMetode } from 'hisab-core';
 
 const METODE_TERSEDIA = daftarMetode();
 
@@ -258,56 +260,15 @@ export default function WaktuSalatPage() {
                 </div>
               </div>
 
-              {/* Metode Hisab */}
-              <div className="flex flex-col gap-1">
-                <label htmlFor="ws-metode" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Kriteria Hisab</label>
-                <select
-                  id="ws-metode"
-                  value={metode}
-                  onChange={(e) => setMetode(e.target.value as HisabMetode)}
-                  className="px-3 py-2.5 rounded-xl border border-card-border bg-background text-xs font-semibold focus:outline-none"
-                >
-                  <optgroup label="Indonesia & Asia Tenggara">
-                    {METODE_TERSEDIA.filter((m) => m.parameter.wilayah.includes('Indonesia') || m.parameter.wilayah.includes('Singapura')).map(({ metode: key, parameter }) => (
-                      <option key={key} value={key}>
-                        {parameter.label} (Subuh {parameter.hSubuh}°, Isya {parameter.isyaMenitSetelahMagrib ? `${parameter.isyaMenitSetelahMagrib} mnt` : `${parameter.hIsya}°`})
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Internasional">
-                    {METODE_TERSEDIA.filter((m) => !(m.parameter.wilayah.includes('Indonesia') || m.parameter.wilayah.includes('Singapura'))).map(({ metode: key, parameter }) => (
-                      <option key={key} value={key}>
-                        {parameter.label} (Subuh {parameter.hSubuh}°, Isya {parameter.isyaMenitSetelahMagrib ? `${parameter.isyaMenitSetelahMagrib} mnt` : `${parameter.hIsya}°`})
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
-                <span className="text-[10px] text-foreground/45 mt-0.5 leading-relaxed">
-                  {PARAMETER_METODE[metode].wilayah} · {PARAMETER_METODE[metode].sumber}
-                </span>
-                {PARAMETER_METODE[metode].statusRujukan === 'perlu_konfirmasi' && (
-                  <span className="text-[10px] text-sifa-gold-700 dark:text-sifa-gold-400 font-semibold leading-relaxed">
-                    ⚠️ Rujukan preset ini belum diverifikasi tim SIFA ke terbitan resmi lembaga terkait — pakai sebagai pembanding, bukan rujukan final.
-                  </span>
-                )}
-              </div>
-
-              {/* Mazhab Asar */}
-              <div className="flex flex-col gap-1">
-                <label htmlFor="ws-mazhab" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Mazhab Awal Asar</label>
-                <select
-                  id="ws-mazhab"
-                  value={mazhabAsar}
-                  onChange={(e) => setMazhabAsar(e.target.value as MazhabAsar)}
-                  className="px-3 py-2.5 rounded-xl border border-card-border bg-background text-xs font-semibold focus:outline-none"
-                >
-                  <option value="Syafii">Syafi&apos;i / Maliki / Hanbali — bayangan 1× tinggi benda</option>
-                  <option value="Hanafi">Hanafi — bayangan 2× tinggi benda</option>
-                </select>
-                <span className="text-[10px] text-foreground/45 mt-0.5 leading-relaxed">
-                  Hanya mempengaruhi waktu Asar: cotan h = tan|φ − δ| + {mazhabAsar === 'Hanafi' ? '2' : '1'}.
-                </span>
-              </div>
+              {/* Metode Hisab & Mazhab Asar */}
+              <PemilihMetode
+                idPrefix="ws"
+                ringkas
+                metode={metode}
+                onMetodeChange={setMetode}
+                mazhabAsar={mazhabAsar}
+                onMazhabChange={setMazhabAsar}
+              />
 
               {/* Ikhtiyat Slider */}
               <div className="flex flex-col gap-1">
@@ -455,6 +416,16 @@ export default function WaktuSalatPage() {
             </div>
           )}
         </Card>
+      )}
+
+      {/* Cara perhitungan langkah demi langkah untuk jadwal di atas */}
+      {currentSchedule && (
+        <CaraPerhitungan
+          judul={`Cara Perhitungan — ${currentSchedule.parameter.label}`}
+          langkah={langkahJadwalSalat(currentSchedule)}
+          sumber={currentSchedule.parameter.sumber}
+          catatan={currentSchedule.parameter.catatan}
+        />
       )}
 
       {/* Perbandingan seluruh kriteria hisab */}

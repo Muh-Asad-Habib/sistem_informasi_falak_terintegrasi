@@ -3,7 +3,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { hitungKriteriaBulan, HijriKriteriaResult, NAMA_BULAN_HIJRIAH } from 'hisab-core';
+import CaraPerhitungan, { langkahKriteriaHilal } from '@/components/features/CaraPerhitungan';
+import {
+  hitungKriteriaBulan,
+  HijriKriteriaResult,
+  KriteriaHijriah,
+  NAMA_BULAN_HIJRIAH,
+  PARAMETER_KRITERIA_HIJRIAH,
+  URUTAN_KRITERIA_HIJRIAH,
+} from 'hisab-core';
 
 // Nama bulan Hijriah — satu sumber dari hisab-core agar tidak berbeda antar-halaman
 const BULAN_HIJRIAH = [...NAMA_BULAN_HIJRIAH];
@@ -74,6 +82,16 @@ export default function KalenderPage() {
   const [targetTahun, setTargetTahun] = useState<number>(1447);
   const [kriteriaResult, setKriteriaResult] = useState<HijriKriteriaResult | null>(null);
   const [kriteriaError, setKriteriaError] = useState<string | null>(null);
+  /** Kriteria mana saja yang ditampilkan — pengguna bisa memilih (default: semua). */
+  const [kriteriaTampil, setKriteriaTampil] = useState<KriteriaHijriah[]>([...URUTAN_KRITERIA_HIJRIAH]);
+  /** Kriteria yang sedang dibuka panel "cara perhitungan"-nya. */
+  const [kriteriaDetail, setKriteriaDetail] = useState<KriteriaHijriah | null>(null);
+
+  const toggleKriteria = (k: KriteriaHijriah) => {
+    setKriteriaTampil((prev) =>
+      prev.includes(k) ? prev.filter((x) => x !== k) : [...URUTAN_KRITERIA_HIJRIAH.filter((u) => prev.includes(u) || u === k)]
+    );
+  };
 
   useEffect(() => {
     setViewMonth(new Date());
@@ -193,11 +211,11 @@ export default function KalenderPage() {
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-card-border">
+      {/* Tabs — bisa digeser di layar kecil supaya label tidak bertumpuk */}
+      <div className="flex border-b border-card-border overflow-x-auto">
         <button
           onClick={() => setActiveTab('kalender')}
-          className={`px-5 py-2.5 font-heading font-bold text-sm border-b-2 transition-all ${
+          className={`shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 font-heading font-bold text-xs sm:text-sm border-b-2 transition-all ${
             activeTab === 'kalender' ? 'border-sifa-green-900 text-sifa-green-900 dark:border-sifa-green-500 dark:text-sifa-green-500' : 'border-transparent text-foreground/60'
           }`}
         >
@@ -205,11 +223,11 @@ export default function KalenderPage() {
         </button>
         <button
           onClick={() => setActiveTab('kriteria')}
-          className={`px-5 py-2.5 font-heading font-bold text-sm border-b-2 transition-all ${
+          className={`shrink-0 whitespace-nowrap px-4 sm:px-5 py-2.5 font-heading font-bold text-xs sm:text-sm border-b-2 transition-all ${
             activeTab === 'kriteria' ? 'border-sifa-green-900 text-sifa-green-900 dark:border-sifa-green-500 dark:text-sifa-green-500' : 'border-transparent text-foreground/60'
           }`}
         >
-          Kriteria Awal Bulan (Perbandingan Lintas Kriteria)
+          Kriteria Awal Bulan
         </button>
       </div>
 
@@ -217,36 +235,44 @@ export default function KalenderPage() {
       {activeTab === 'kalender' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Calendar Grid Card */}
-          <Card className="lg:col-span-8 p-4 md:p-5">
-            <div className="flex justify-between items-center mb-4">
+          <Card className="lg:col-span-8 p-3 sm:p-5">
+            <div className="flex flex-wrap justify-between items-center gap-2 mb-4">
               <div className="flex items-center gap-2">
-                <button onClick={goToPrevMonth} className="w-8 h-8 rounded-lg border border-card-border hover:bg-foreground/10 transition-colors flex items-center justify-center text-foreground/70 font-bold">‹</button>
-                <h2 className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100 min-w-[180px] text-center">
+                <button onClick={goToPrevMonth} aria-label="Bulan sebelumnya" className="w-8 h-8 rounded-lg border border-card-border hover:bg-foreground/10 transition-colors flex items-center justify-center text-foreground/70 font-bold">‹</button>
+                <h2 className="font-heading text-base sm:text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100 min-w-[130px] sm:min-w-[180px] text-center">
                   {viewMonth.toLocaleString('id-ID', { month: 'long', year: 'numeric' })}
                 </h2>
-                <button onClick={goToNextMonth} className="w-8 h-8 rounded-lg border border-card-border hover:bg-foreground/10 transition-colors flex items-center justify-center text-foreground/70 font-bold">›</button>
+                <button onClick={goToNextMonth} aria-label="Bulan berikutnya" className="w-8 h-8 rounded-lg border border-card-border hover:bg-foreground/10 transition-colors flex items-center justify-center text-foreground/70 font-bold">›</button>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={goToToday} className="text-xs px-3 py-1 rounded-lg border border-card-border hover:border-sifa-green-600 hover:text-sifa-green-900 transition-colors font-semibold text-foreground/60">Bulan Ini</button>
-                <Badge variant="gold" className="font-mono text-[10px]">
+                <button onClick={goToToday} className="text-[11px] px-3 py-1 rounded-lg border border-card-border hover:border-sifa-green-600 hover:text-sifa-green-900 transition-colors font-semibold text-foreground/60 whitespace-nowrap">Bulan Ini</button>
+                <Badge variant="gold" className="font-mono text-[10px] whitespace-nowrap">
                   {getTabularHijri(new Date(year, month, 1)).monthName} {getTabularHijri(viewMonth).year} H
                 </Badge>
               </div>
             </div>
 
-            {/* Days of Week Header */}
-            <div className="grid grid-cols-7 text-center font-bold text-xs py-2 bg-foreground/5 rounded-t-lg border-x border-t border-card-border/60">
-              {NAMA_HARI.map((day, idx) => (
-                <div key={idx} className={idx === 0 ? 'text-red-500' : 'text-foreground/70'}>
-                  {day}
+            {/* Grid kalender — bisa digeser mendatar di layar sempit */}
+            <div className="overflow-x-auto -mx-1 px-1">
+              <div className="min-w-[560px]">
+                {/* Days of Week Header */}
+                <div className="grid grid-cols-7 text-center font-bold text-xs py-2 bg-foreground/5 rounded-t-lg border-x border-t border-card-border/60">
+                  {NAMA_HARI.map((day, idx) => (
+                    <div key={idx} className={idx === 0 ? 'text-red-500' : 'text-foreground/70'}>
+                      {day}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            {/* Calendar Cells Grid */}
-            <div className="grid grid-cols-7 border-l border-b border-card-border/60">
-              {calendarCells}
+                {/* Calendar Cells Grid */}
+                <div className="grid grid-cols-7 border-l border-b border-card-border/60">
+                  {calendarCells}
+                </div>
+              </div>
             </div>
+            <p className="text-[10px] text-foreground/40 mt-2 sm:hidden">
+              Geser tabel ke samping untuk melihat seluruh kolom hari.
+            </p>
           </Card>
 
           {/* Sidebar Information */}
@@ -340,6 +366,35 @@ export default function KalenderPage() {
                 </button>
               ))}
             </div>
+
+            {/* Pilih kriteria mana yang ditampilkan */}
+            <div className="flex flex-col gap-2 border-t border-card-border/50 pt-3">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-foreground/50">
+                Kriteria yang ditampilkan ({kriteriaTampil.length}/{URUTAN_KRITERIA_HIJRIAH.length})
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {URUTAN_KRITERIA_HIJRIAH.map((k) => {
+                  const aktif = kriteriaTampil.includes(k);
+                  const p = PARAMETER_KRITERIA_HIJRIAH[k];
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => toggleKriteria(k)}
+                      aria-pressed={aktif}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors flex items-center gap-1.5 ${
+                        aktif
+                          ? 'bg-sifa-green-50 dark:bg-sifa-green-900/25 border-sifa-green-600/50 text-sifa-green-900 dark:text-sifa-green-100'
+                          : 'border-card-border bg-foreground/5 text-foreground/45'
+                      }`}
+                    >
+                      <span aria-hidden="true">{aktif ? '☑' : '☐'}</span>
+                      {p.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </Card>
 
           {kriteriaError && (
@@ -381,22 +436,24 @@ export default function KalenderPage() {
           {/* Kartu tiap kriteria — ditampilkan berdampingan, tidak dipilih salah satu */}
           {kriteriaResult && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {kriteriaResult.evaluasi.map((ev) => (
+              {kriteriaResult.evaluasi
+                .filter((ev) => kriteriaTampil.includes(ev.kriteria))
+                .map((ev) => (
                 <Card
                   key={ev.kriteria}
                   variant={ev.terpenuhi ? (ev.parameter.jenis === 'global' ? 'gold' : 'green') : 'default'}
-                  className="flex flex-col gap-3"
+                  className="flex flex-col gap-3 p-4 sm:p-5"
                 >
                   <div className="flex justify-between items-start gap-3 border-b border-card-border pb-3">
-                    <div className="flex flex-col gap-0.5">
-                      <h3 className="font-heading text-base font-extrabold text-sifa-green-900 dark:text-sifa-green-100 leading-tight">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <h3 className="font-heading text-sm sm:text-base font-extrabold text-sifa-green-900 dark:text-sifa-green-100 leading-tight break-words">
                         {ev.parameter.label}
                       </h3>
-                      <span className="text-[10px] text-foreground/50 font-semibold">{ev.parameter.organisasi}</span>
+                      <span className="text-[10px] text-foreground/50 font-semibold break-words">{ev.parameter.organisasi}</span>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge variant={ev.terpenuhi ? (ev.parameter.jenis === 'global' ? 'gold' : 'green') : 'default'} className="uppercase text-[9px]">
-                        {ev.terpenuhi ? 'Terpenuhi' : 'Belum Terpenuhi'}
+                      <Badge variant={ev.terpenuhi ? (ev.parameter.jenis === 'global' ? 'gold' : 'green') : 'default'} className="uppercase text-[9px] whitespace-nowrap">
+                        {ev.terpenuhi ? 'Terpenuhi' : 'Belum'}
                       </Badge>
                       <span className="text-[9px] font-bold uppercase tracking-wide text-foreground/40">
                         Matlak {ev.parameter.jenis}
@@ -407,49 +464,73 @@ export default function KalenderPage() {
                   <div className="flex flex-col gap-1.5 text-xs">
                     <div className="flex justify-between gap-3">
                       <span className="text-foreground/50">Ambang tinggi hilal:</span>
-                      <span className="font-mono font-bold">
+                      <span className="font-mono font-bold whitespace-nowrap">
                         {ev.parameter.minTinggiHilal === 0 ? '> 0°' : `≥ ${ev.parameter.minTinggiHilal}°`}
                       </span>
                     </div>
                     <div className="flex justify-between gap-3">
                       <span className="text-foreground/50">Ambang elongasi:</span>
-                      <span className="font-mono font-bold">
-                        {ev.parameter.minElongasi === 0 ? 'tidak disyaratkan' : `≥ ${ev.parameter.minElongasi}°`}
+                      <span className="font-mono font-bold whitespace-nowrap">
+                        {ev.parameter.minElongasi === 0 ? '—' : `≥ ${ev.parameter.minElongasi}°`}
                       </span>
                     </div>
                     {ev.parameter.minUmurBulanJam > 0 && (
                       <div className="flex justify-between gap-3">
                         <span className="text-foreground/50">Ambang umur bulan:</span>
-                        <span className="font-mono font-bold">≥ {ev.parameter.minUmurBulanJam} jam</span>
+                        <span className="font-mono font-bold whitespace-nowrap">≥ {ev.parameter.minUmurBulanJam} jam</span>
                       </div>
                     )}
                     <div className="flex justify-between gap-3 border-t border-card-border/40 pt-1.5 mt-1">
                       <span className="text-foreground/50">Nilai teruji:</span>
                       <span className="font-mono font-bold text-sifa-green-950 dark:text-sifa-green-100 text-right">
-                        tinggi {ev.tinggiHilal.toFixed(2)}° · elongasi {ev.elongasi.toFixed(2)}°
+                        {ev.tinggiHilal.toFixed(2)}° · {ev.elongasi.toFixed(2)}°
                       </span>
                     </div>
                   </div>
 
-                  <div className="text-[11px] bg-foreground/[0.03] p-2.5 rounded-lg border border-card-border/40 leading-relaxed font-mono text-foreground/75">
+                  <div className="text-[11px] bg-foreground/[0.03] p-2.5 rounded-lg border border-card-border/40 leading-relaxed font-mono text-foreground/75 break-words">
                     {ev.alasan}
                   </div>
 
+                  <button
+                    type="button"
+                    onClick={() => setKriteriaDetail(kriteriaDetail === ev.kriteria ? null : ev.kriteria)}
+                    aria-expanded={kriteriaDetail === ev.kriteria}
+                    className="self-start text-[10px] font-extrabold text-sifa-green-700 dark:text-sifa-green-400 hover:underline"
+                  >
+                    {kriteriaDetail === ev.kriteria ? 'Tutup cara perhitungan' : '🧮 Lihat cara perhitungan'}
+                  </button>
+
+                  {kriteriaDetail === ev.kriteria && (
+                    <CaraPerhitungan
+                      judul={`Langkah hisab — ${ev.parameter.label}`}
+                      langkah={langkahKriteriaHilal(kriteriaResult, ev)}
+                      terbukaAwal
+                      sumber={ev.parameter.sumber}
+                      catatan={ev.parameter.catatan}
+                    />
+                  )}
+
                   <div className="flex flex-col gap-1 text-[10px] leading-relaxed mt-auto">
-                    <span className="text-foreground/55">
+                    <span className="text-foreground/55 break-words">
                       <strong>Sumber:</strong> {ev.parameter.sumber}
                     </span>
                     {ev.parameter.statusRujukan === 'perlu_konfirmasi' && (
                       <span className="text-sifa-gold-700 dark:text-sifa-gold-400 font-semibold">
-                        ⚠️ Rujukan belum diverifikasi tim SIFA ke terbitan resmi — tampil sebagai pembanding edukatif.
+                        ⚠️ Rujukan belum diverifikasi tim SIFA — tampil sebagai pembanding edukatif.
                       </span>
-                    )}
-                    {ev.parameter.catatan && (
-                      <span className="text-foreground/50 italic">{ev.parameter.catatan}</span>
                     )}
                   </div>
                 </Card>
               ))}
+
+              {kriteriaTampil.length === 0 && (
+                <Card className="col-span-full p-6 text-center">
+                  <p className="text-xs text-foreground/50">
+                    Tidak ada kriteria yang dipilih. Centang minimal satu kriteria di atas.
+                  </p>
+                </Card>
+              )}
             </div>
           )}
 

@@ -1,19 +1,28 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
-import { formatJarak } from 'hisab-core';
+import PemilihMetode from '@/components/features/PemilihMetode';
+import CaraPerhitungan, { langkahJadwalSalat } from '@/components/features/CaraPerhitungan';
+import {
+  formatJarak,
+  hitungJadwalSalat,
+  HisabMetode,
+  MazhabAsar,
+  PrayerTimesResult,
+} from 'hisab-core';
 import { ambilMasjidOsmDenganCache, MasjidOsm } from '@/lib/osm';
+import { perkiraanTimezone } from '@/lib/lokasi';
 
 // MapLibre butuh `window` → hanya dimuat di klien.
 const PetaMasjidTerdekat = dynamic(() => import('@/components/features/PetaMasjidTerdekat'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-72 rounded-xl border border-card-border/50 bg-foreground/[0.03] flex items-center justify-center">
+    <div className="w-full h-[300px] rounded-xl border border-card-border/50 bg-foreground/[0.03] flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-sifa-green-600 border-t-transparent rounded-full animate-spin" />
     </div>
   ),
@@ -38,6 +47,11 @@ export default function DirektoriPage() {
 
   const [radius, setRadius] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Metode hisab untuk jadwal salat tiap masjid
+  const [metode, setMetode] = useState<HisabMetode>('Muhammadiyah');
+  const [mazhabAsar, setMazhabAsar] = useState<MazhabAsar>('Syafii');
+  const [masjidTerbuka, setMasjidTerbuka] = useState<number | null>(null);
 
   // ── Ambil masjid dari OSM lewat lib bersama (query & cache ada di lib/osm.ts) ──
   const loadMosques = useCallback(async (lat: number, lng: number, r: number) => {
@@ -116,6 +130,36 @@ export default function DirektoriPage() {
     m.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.alamat.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  /**
+   * Jadwal salat tiap masjid dihitung untuk KOORDINAT MASJID itu sendiri
+   * (bukan koordinat pengguna), memakai metode & mazhab yang dipilih di atas.
+   * Dibatasi 30 entri teratas agar tidak membebani perangkat kelas bawah.
+   */
+  const jadwalPerMasjid = useMemo(() => {
+    const peta = new Map<number, PrayerTimesResult>();
+    filtered.slice(0, 30).forEach((m) => {
+      try {
+        peta.set(
+          m.id,
+          hitungJadwalSalat(
+            { lat: m.lat, lng: m.lng },
+            new Date(),
+            perkiraanTimezone(m.lng),
+            0,
+            metode,
+            2,
+            undefined,
+            mazhabAsar
+          )
+        );
+      } catch (e) {
+        console.error('Gagal menghitung jadwal untuk masjid OSM:', e);
+      }
+    });
+    return peta;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mosques, searchTerm, metode, mazhabAsar]);
 
   const formatDist = (d: number) => formatJarak(d);
 
@@ -265,25 +309,49 @@ export default function DirektoriPage() {
             </button>
           </div>
 
-          {/* Peta interaktif OSM — sebaran masjid/musala hasil pencarian */}
+          {/* Pemilih metode hisab untuk jadwal salat tiap masjid */}
+          <Card className="p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-base" aria-hidden="true">🕰️</span>
+              <h2 className="font-heading font-bold text-sm text-sifa-green-900 dark:text-sifa-green-100">
+                Metode Hisab Jadwal Salat Masjid
+              </h2>
+            </div>
+            <PemilihMetode
+              idPrefix="dir"
+              metode={metode}
+              onMetodeChange={setMetode}
+              mazhabAsar={mazhabAsar}
+              onMazhabChange={setMazhabAsar}
+            />
+            <p className="text-[10px] text-foreground/45 leading-relaxed">
+              Jadwal pada tiap kartu dihitung untuk <strong>koordinat masjid itu sendiri</strong>
+              {' '}(zona waktu diperkirakan dari bujur, ikhtiyat 2 menit), bukan koordinat Anda.
+            </p>
+          </Card>
+
+          {/* Peta interaktif — OpenStreetMap (marker masjid) atau Google Maps */}
           <PetaMasjidTerdekat
             lat={userLoc.lat}
             lng={userLoc.lng}
             masjid={filtered}
-            tinggiKelas="h-72"
+            tinggiPx={300}
             zoom={radius <= 1 ? 15 : radius <= 3 ? 14 : radius <= 5 ? 13 : 12}
           />
 
           {/* Mosque Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {filtered.map((m, idx) => (
+            {filtered.map((m, idx) => {
+              const jadwal = jadwalPerMasjid.get(m.id);
+              const dibuka = masjidTerbuka === m.id;
+              return (
               <Card
                 key={m.id}
-                className="p-5 flex flex-col justify-between gap-4 hover:border-sifa-green-600/40 hover:shadow-lg transition-all duration-300"
+                className="p-4 sm:p-5 flex flex-col justify-between gap-4 hover:border-sifa-green-600/40 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex flex-col gap-2.5">
                   <div className="flex justify-between items-start gap-3">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
                       {idx < 3 && (
                         <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold flex-shrink-0 ${
                           idx === 0 ? 'bg-sifa-gold-500 text-sifa-green-950' :
@@ -293,7 +361,7 @@ export default function DirektoriPage() {
                           {idx + 1}
                         </span>
                       )}
-                      <h3 className="font-heading font-extrabold text-sm text-sifa-green-900 dark:text-sifa-green-100 leading-tight">
+                      <h3 className="font-heading font-extrabold text-sm text-sifa-green-900 dark:text-sifa-green-100 leading-tight break-words">
                         <span aria-hidden="true">{m.jenis === 'masjid' ? '🕌' : '🛐'}</span> {m.nama}
                       </h3>
                     </div>
@@ -306,11 +374,58 @@ export default function DirektoriPage() {
                     {m.alamat}
                   </p>
 
-                  <div className="flex items-center gap-2 text-[10px] font-mono text-foreground/50">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-mono text-foreground/50">
                     <span>🧭 Kiblat: <span className="text-sifa-gold-600 font-bold">{m.azimuthKiblat.toFixed(1)}°</span></span>
-                    <span>·</span>
+                    <span aria-hidden="true">·</span>
                     <span>{m.lat.toFixed(4)}°, {m.lng.toFixed(4)}°</span>
                   </div>
+
+                  {/* Jadwal salat masjid ini menurut metode terpilih */}
+                  {jadwal ? (
+                    <div className="flex flex-col gap-2 rounded-xl border border-card-border/50 bg-foreground/[0.02] p-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[9px] font-extrabold uppercase tracking-wide text-foreground/45">
+                          Jadwal hari ini · {jadwal.parameter.label}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setMasjidTerbuka(dibuka ? null : m.id)}
+                          aria-expanded={dibuka}
+                          className="text-[9px] font-extrabold text-sifa-green-700 dark:text-sifa-green-400 hover:underline shrink-0"
+                        >
+                          {dibuka ? 'Tutup cara hitung' : 'Cara perhitungan'}
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                        {[
+                          { l: 'Subuh', v: jadwal.subuh },
+                          { l: 'Zuhur', v: jadwal.zuhur },
+                          { l: 'Asar', v: jadwal.asar },
+                          { l: 'Magrib', v: jadwal.magrib },
+                          { l: 'Isya', v: jadwal.isya },
+                        ].map((w) => (
+                          <div key={w.l} className="flex flex-col items-center rounded-lg bg-card-bg border border-card-border/40 py-1.5">
+                            <span className="text-[8px] font-bold uppercase text-foreground/40">{w.l}</span>
+                            <span className="font-mono text-[11px] font-extrabold text-sifa-green-900 dark:text-sifa-green-100">{w.v}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-[10px] text-foreground/40 italic">
+                      Jadwal ditampilkan untuk 30 masjid teratas — persempit pencarian untuk melihat yang lain.
+                    </span>
+                  )}
+
+                  {dibuka && jadwal && (
+                    <CaraPerhitungan
+                      judul={`Cara perhitungan — ${m.nama}`}
+                      langkah={langkahJadwalSalat(jadwal)}
+                      terbukaAwal
+                      sumber={jadwal.parameter.sumber}
+                      catatan={jadwal.parameter.catatan}
+                    />
+                  )}
                 </div>
 
                 {/* Action buttons */}
@@ -351,7 +466,8 @@ export default function DirektoriPage() {
                   </a>
                 </div>
               </Card>
-            ))}
+              );
+            })}
 
             {filtered.length === 0 && (
               <div className="col-span-full py-16 flex flex-col items-center gap-4 text-center">
