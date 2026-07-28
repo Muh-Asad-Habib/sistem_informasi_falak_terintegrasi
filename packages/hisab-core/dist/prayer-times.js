@@ -1,4 +1,158 @@
 import { HisabError } from './errors.js';
+/** Faktor bayangan Asar per mazhab (dipakai pada rumus cotan h = tan|φ − δ| + faktor). */
+export const FAKTOR_BAYANGAN_ASAR = {
+    Syafii: 1,
+    Hanafi: 2,
+};
+/**
+ * Nilai bersama yang berlaku untuk semua kriteria.
+ *
+ * Semi-diameter & refraksi adalah besaran astronomis (bukan pilihan mazhab), sedangkan
+ * Dhuha & Imsak tidak didefinisikan oleh kriteria internasional (MWL/ISNA/dll.) sehingga
+ * SIFA memakai konvensi Modul AIK IV Bab III agar tidak mengarang nilai baru.
+ */
+const DASAR_ASTRONOMIS = {
+    hTerbit: -1,
+    hDhuha: 4.5, // 4Â°30' â€” Modul AIK IV Bab III
+    semiDiameterMenitBusur: 16,
+    refraksiMenitBusur: 34,
+    imsakMenit: 10,
+    mazhabAsarDefault: 'Syafii',
+};
+const CATATAN_DHUHA_IMSAK = "Kriteria ini hanya mengatur ketinggian matahari untuk Subuh & Isya. Nilai Dhuha (4Â°30') dan Imsak (10 menit sebelum Subuh) mengikuti konvensi Modul AIK IV Bab III agar tidak ada angka karangan.";
+/**
+ * Tabel parameter per metode hisab.
+ *
+ * PENTING: nilai di sini menentukan hasil ibadah. Jangan mengubahnya tanpa
+ * rujukan resmi dan tanpa menjalankan golden test (`agent_docs/testing.md`).
+ */
+export const PARAMETER_METODE = {
+    Muhammadiyah: {
+        ...DASAR_ASTRONOMIS,
+        label: 'Muhammadiyah',
+        wilayah: 'Indonesia — Majelis Tarjih dan Tajdid PP Muhammadiyah',
+        // Modul AIK IV Bab III (contoh hisab Unismuh) memakai h Subuh â‰ˆ -20Â° dan h Isya â‰ˆ -18Â°.
+        hSubuh: -20,
+        hIsya: -18,
+        sumber: 'Modul AIK IV Fakultas Teknik Unismuh Bab III (Waktu Salat) & Pedoman Hisab Muhammadiyah (Majelis Tarjih dan Tajdid, 2009)',
+        statusRujukan: 'terverifikasi',
+        catatan: 'TODO: perlu konfirmasi â€” Majelis Tarjih pernah membahas revisi ketinggian awal Subuh menjadi -18Â°. Selama belum ada konfirmasi resmi dari pembimbing AIK, SIFA tetap memakai -20Â° sesuai Modul AIK IV.',
+    },
+    Kemenag: {
+        ...DASAR_ASTRONOMIS,
+        label: 'Kemenag RI',
+        wilayah: 'Indonesia — Kementerian Agama Republik Indonesia',
+        // Almanak Hisab Rukyat Kemenag RI: awal Subuh h = -20Â°, awal Isya h = -18Â°.
+        hSubuh: -20,
+        hIsya: -18,
+        sumber: 'Almanak Hisab Rukyat, Kementerian Agama RI',
+        statusRujukan: 'terverifikasi',
+        catatan: 'Untuk wilayah Indonesia parameter ketinggian matahari Kemenag RI dan Modul AIK IV sama (-20Â°/-18Â°), sehingga selisih hasil kedua metode hanya muncul bila ikhtiyat/ketinggian tempat diubah. SIFA menampilkannya apa adanya, bukan membuat perbedaan semu.',
+    },
+    MABIMS: {
+        ...DASAR_ASTRONOMIS,
+        label: 'MABIMS',
+        wilayah: 'Brunei, Indonesia, Malaysia, Singapura',
+        hSubuh: -20,
+        hIsya: -18,
+        sumber: 'Kesepakatan Menteri Agama Brunei Darussalam, Indonesia, Malaysia, dan Singapura (MABIMS) tentang kriteria waktu salat',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: 'Nilai -20Â°/-18Â° identik dengan Kemenag RI karena Kemenag memang memakai kriteria MABIMS. Preset ini disediakan agar penamaannya jelas bagi pengguna di luar Indonesia, bukan untuk menciptakan perbedaan angka. ' +
+            CATATAN_DHUHA_IMSAK,
+    },
+    NU: {
+        ...DASAR_ASTRONOMIS,
+        label: 'Nahdlatul Ulama (LF PBNU)',
+        wilayah: 'Indonesia — Lembaga Falakiyah PBNU',
+        hSubuh: -20,
+        hIsya: -18,
+        sumber: 'Almanak/Pedoman Hisab Rukyat Lembaga Falakiyah PBNU',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: 'TODO: perlu konfirmasi rujukan cetak LF PBNU. Sepanjang penelusuran, LF PBNU memakai ketinggian matahari yang sama dengan Kemenag (-20Â°/-18Â°) dan mazhab Asar Syafi\u2019i; perbedaan praktis dengan jadwal Muhammadiyah umumnya berasal dari ikhtiyat, bukan dari ketinggian matahari. ' +
+            CATATAN_DHUHA_IMSAK,
+    },
+    MWL: {
+        ...DASAR_ASTRONOMIS,
+        label: 'Muslim World League',
+        wilayah: 'Eropa, Timur Jauh, sebagian Amerika',
+        hSubuh: -18,
+        hIsya: -17,
+        sumber: 'Muslim World League (Rabithah al-Alam al-Islami) — parameter kalkulasi waktu salat',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: CATATAN_DHUHA_IMSAK,
+    },
+    ISNA: {
+        ...DASAR_ASTRONOMIS,
+        label: 'ISNA (Amerika Utara)',
+        wilayah: 'Amerika Serikat & Kanada',
+        hSubuh: -15,
+        hIsya: -15,
+        sumber: 'Islamic Society of North America (ISNA) — parameter kalkulasi waktu salat',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: 'Kriteria paling "longgar" (15Â°/15Â°) sehingga Subuh paling siang dan Isya paling awal di antara preset yang tersedia. ' +
+            CATATAN_DHUHA_IMSAK,
+    },
+    UmmAlQura: {
+        ...DASAR_ASTRONOMIS,
+        label: 'Umm al-Qura (Makkah)',
+        wilayah: 'Arab Saudi',
+        hSubuh: -18.5,
+        hIsya: -18, // tidak dipakai — Isya memakai selang waktu tetap di bawah ini
+        isyaMenitSetelahMagrib: 90,
+        sumber: 'Umm al-Qura University, Makkah — Taqwim Umm al-Qura',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: 'Isya TIDAK dihitung dari ketinggian matahari, melainkan 90 menit setelah Magrib (120 menit selama Ramadan — penyesuaian Ramadan belum diterapkan otomatis di SIFA). ' +
+            CATATAN_DHUHA_IMSAK,
+    },
+    Egypt: {
+        ...DASAR_ASTRONOMIS,
+        label: 'Egyptian General Authority of Survey',
+        wilayah: 'Afrika, Suriah, Irak, Lebanon, Malaysia (sebagian)',
+        hSubuh: -19.5,
+        hIsya: -17.5,
+        sumber: 'Egyptian General Authority of Survey — parameter kalkulasi waktu salat',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: CATATAN_DHUHA_IMSAK,
+    },
+    Karachi: {
+        ...DASAR_ASTRONOMIS,
+        label: 'Univ. of Islamic Sciences, Karachi',
+        wilayah: 'Pakistan, India, Bangladesh, Afghanistan',
+        hSubuh: -18,
+        hIsya: -18,
+        sumber: 'University of Islamic Sciences, Karachi — parameter kalkulasi waktu salat',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: 'Di kawasan Asia Selatan mazhab Asar yang lazim dipakai adalah Hanafi (bayangan 2Ã—). SIFA tetap memakai Syafi\u2019i sebagai bawaan dan menyediakan pilihan mazhab Asar terpisah agar tidak mengubah hasil secara diam-diam. ' +
+            CATATAN_DHUHA_IMSAK,
+    },
+    Singapura: {
+        ...DASAR_ASTRONOMIS,
+        label: 'MUIS Singapura',
+        wilayah: 'Singapura',
+        hSubuh: -20,
+        hIsya: -18,
+        sumber: 'Majlis Ugama Islam Singapura (MUIS) — jadwal waktu solat',
+        statusRujukan: 'perlu_konfirmasi',
+        catatan: CATATAN_DHUHA_IMSAK,
+    },
+};
+/** Urutan tampil preset di UI (Indonesia dulu, baru internasional). */
+export const URUTAN_METODE = [
+    'Muhammadiyah',
+    'Kemenag',
+    'MABIMS',
+    'NU',
+    'MWL',
+    'ISNA',
+    'UmmAlQura',
+    'Egypt',
+    'Karachi',
+    'Singapura',
+];
+/** Daftar metode siap render untuk dropdown/tabel perbandingan di UI. */
+export function daftarMetode() {
+    return URUTAN_METODE.map((metode) => ({ metode, parameter: PARAMETER_METODE[metode] }));
+}
 /**
  * Menghitung Julian Date dari objek Date.
  */
@@ -70,30 +224,55 @@ export function hitungEphemerisMatahari(date) {
  * kecuali waktu Terbit dan Dhuha yang dikurangkan (atau dibulatkan ke bawah jika instruksi modul menentukan demikian).
  */
 export function formatJamDesimal(decimalHours, roundUp = true) {
-    let totalSeconds = Math.round(decimalHours * 3600);
+    const totalSeconds = Math.round(decimalHours * 3600);
     // Bulatkan ke menit terdekat
     let minutes = Math.floor(totalSeconds / 60);
-    let seconds = totalSeconds % 60;
+    const seconds = totalSeconds % 60;
     if (roundUp && seconds > 0) {
         minutes += 1;
     }
     let finalHours = Math.floor(minutes / 60) % 24;
-    let finalMinutes = minutes % 60;
+    const finalMinutes = ((minutes % 60) + 60) % 60;
     if (finalHours < 0)
         finalHours += 24;
     const hh = finalHours.toString().padStart(2, '0');
     const mm = finalMinutes.toString().padStart(2, '0');
     return `${hh}:${mm}`;
 }
+/** Menghitung sudut waktu t (derajat) untuk tinggi matahari h tertentu. */
+function sudutWaktu(hDerajat, latRad, dekRad) {
+    const hRad = hDerajat * Math.PI / 180;
+    const cosT = (Math.sin(hRad) - Math.sin(latRad) * Math.sin(dekRad)) / (Math.cos(latRad) * Math.cos(dekRad));
+    if (Math.abs(cosT) > 1)
+        return null; // Matahari tidak pernah mencapai ketinggian ini (lintang tinggi)
+    return Math.acos(cosT) * 180 / Math.PI;
+}
 /**
  * Menghitung jadwal salat lengkap untuk suatu koordinat geografis dan tanggal.
+ *
+ * @param metode Menentukan tabel parameter (lihat `PARAMETER_METODE`). Parameter ini
+ *               benar-benar dipakai untuk kalkulasi â€” bukan sekadar label.
+ * @param parameterOverride Untuk uji regresi terhadap contoh modul: menimpa sebagian
+ *               parameter secara eksplisit dan terdokumentasi.
+ * @param mazhabAsar Mazhab penentuan awal Asar. Bila tidak diisi, dipakai bawaan metode
+ *               (`mazhabAsarDefault`) supaya tidak ada perubahan hasil secara diam-diam.
  */
 export function hitungJadwalSalat(coordinate, tanggal, timezoneOffset, // GMT+8 = 8, GMT+7 = 7
 elevation = 0, // Ketinggian tempat mdpl
-metode = 'Muhammadiyah', ikhtiyatMenit = 2) {
+metode = 'Muhammadiyah', ikhtiyatMenit = 2, parameterOverride, mazhabAsar) {
     const { lat, lng } = coordinate;
     if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
         throw new HisabError('INVALID_COORDINATES', 'Koordinat tidak valid');
+    }
+    const dasar = PARAMETER_METODE[metode];
+    if (!dasar) {
+        throw new HisabError('INVALID_METHOD', `Metode hisab tidak dikenal: ${metode}`);
+    }
+    const p = { ...dasar, ...parameterOverride };
+    const mazhab = mazhabAsar ?? p.mazhabAsarDefault ?? 'Syafii';
+    const faktorBayangan = FAKTOR_BAYANGAN_ASAR[mazhab];
+    if (faktorBayangan === undefined) {
+        throw new HisabError('INVALID_METHOD', `Mazhab Asar tidak dikenal: ${mazhab}`);
     }
     // 1. Dapatkan posisi Matahari
     // Untuk keakuratan optimal, kita hitung pada jam 12:00 zona waktu lokal (solar noon perkiraan)
@@ -101,86 +280,54 @@ metode = 'Muhammadiyah', ikhtiyatMenit = 2) {
     localNoonDate.setUTCHours(12 - timezoneOffset, 0, 0, 0);
     const { deklinasi, eot } = hitungEphemerisMatahari(localNoonDate);
     // 2. Hitung Meridian Pass (zawal/solar noon)
-    // Mer. Pass = 12.0 - eot_jam
     const eotHours = eot / 60;
     const meridianPass = 12.0 - eotHours;
-    // 3. Hitung KWB / Interpolasi (I)
-    // I = (BujurTempat - BujurDaerah) / 15
+    // 3. Hitung KWB / Interpolasi (I) = (BujurTempat - BujurDaerah) / 15
     const bujurDaerah = timezoneOffset * 15;
     const interpolasi = (lng - bujurDaerah) / 15;
-    // Zuhur = Meridian Pass - I + (ikhtiyat / 60)
-    const zuhurDesimal = meridianPass - interpolasi + (ikhtiyatMenit / 60);
-    // 4. Hitung Asar
+    const ikh = ikhtiyatMenit / 60;
+    // Zuhur = Meridian Pass - I + ikhtiyat
+    const zuhurDesimal = meridianPass - interpolasi + ikh;
     const latRad = lat * Math.PI / 180;
     const dekRad = deklinasi * Math.PI / 180;
-    const cotanHAsar = Math.tan(Math.abs(latRad - dekRad)) + 1;
-    const hAsar = Math.atan(1 / cotanHAsar); // dalam radian
-    const cosTAsar = (Math.sin(hAsar) - Math.sin(latRad) * Math.sin(dekRad)) / (Math.cos(latRad) * Math.cos(dekRad));
-    let asarDesimal = zuhurDesimal; // Fallback jika matahari tidak terbenam/terbit di lintang tinggi
-    if (Math.abs(cosTAsar) <= 1) {
-        const tAsar = Math.acos(cosTAsar) * 180 / Math.PI; // dalam derajat
-        asarDesimal = meridianPass + (tAsar / 15) - interpolasi + (ikhtiyatMenit / 60);
+    // 4. Asar â€” cotan(h) = tan|Ï† - Î´| + faktor bayangan mazhab (Syafi'i 1Ã—, Hanafi 2Ã—)
+    const cotanHAsar = Math.tan(Math.abs(latRad - dekRad)) + faktorBayangan;
+    const hAsarRad = Math.atan(1 / cotanHAsar);
+    const hAsarDeg = hAsarRad * 180 / Math.PI;
+    const tAsar = sudutWaktu(hAsarDeg, latRad, dekRad);
+    const asarDesimal = tAsar === null ? zuhurDesimal : meridianPass + tAsar / 15 - interpolasi + ikh;
+    // 5. Magrib & Terbit â€” koreksi refraksi, semi-diameter, & Dip (kerendahan ufuk)
+    const dip = 1.76 * Math.sqrt(Math.max(elevation, 0)) / 60; // derajat
+    const hMagribDeg = -(p.semiDiameterMenitBusur / 60 + p.refraksiMenitBusur / 60 + dip);
+    const tMagrib = sudutWaktu(hMagribDeg, latRad, dekRad);
+    const magribDesimal = tMagrib === null ? zuhurDesimal : meridianPass + tMagrib / 15 - interpolasi + ikh;
+    const tTerbit = sudutWaktu(p.hTerbit, latRad, dekRad);
+    // Terbit dikurangi ikhtiyat (arah kehati-hatian berlawanan dengan waktu lain)
+    const terbitDesimal = tTerbit === null ? zuhurDesimal : meridianPass - tTerbit / 15 - interpolasi - ikh;
+    // 6. Subuh & Isya â€” memakai parameter metode terpilih
+    const tSubuh = sudutWaktu(p.hSubuh, latRad, dekRad);
+    const subuhDesimal = tSubuh === null ? zuhurDesimal : meridianPass - tSubuh / 15 - interpolasi + ikh;
+    // Sebagian kriteria (mis. Umm al-Qura) memakai selang waktu tetap setelah Magrib
+    // untuk Isya, bukan ketinggian matahari. Keduanya ditangani eksplisit di sini.
+    const isyaBerbasisInterval = typeof p.isyaMenitSetelahMagrib === 'number';
+    let isyaDesimal;
+    if (isyaBerbasisInterval) {
+        isyaDesimal = magribDesimal + p.isyaMenitSetelahMagrib / 60;
     }
-    // 5. Hitung Magrib & Terbit (menggunakan koreksi refraksi, semi-diameter, & Dip)
-    // Dip = 1.76 * sqrt(h_meter) / 60 (dalam derajat)
-    const dip = 1.76 * Math.sqrt(elevation) / 60;
-    const refraksi = 34 / 60; // 34 menit busur
-    const semiDiameter = 16 / 60; // 16 menit busur rata-rata
-    // Magrib h0 = -(SD + Ref + Dip)
-    const hMagribRad = -(semiDiameter + refraksi + dip) * Math.PI / 180;
-    const cosTMagrib = (Math.sin(hMagribRad) - Math.sin(latRad) * Math.sin(dekRad)) / (Math.cos(latRad) * Math.cos(dekRad));
-    let magribDesimal = zuhurDesimal;
-    if (Math.abs(cosTMagrib) <= 1) {
-        const tMagrib = Math.acos(cosTMagrib) * 180 / Math.PI;
-        magribDesimal = meridianPass + (tMagrib / 15) - interpolasi + (ikhtiyatMenit / 60);
+    else {
+        const tIsya = sudutWaktu(p.hIsya, latRad, dekRad);
+        isyaDesimal = tIsya === null ? zuhurDesimal : meridianPass + tIsya / 15 - interpolasi + ikh;
     }
-    // Terbit h0 = -(SD + Ref + Dip) - wait, di modul Terbit h0 = -1° (atau -1° - Dip?)
-    // Di halaman 68: "Terbit h = -01°" (tanpa SD/Ref kustom, tapi di rumus cos t memakai htb).
-    // Mari gunakan h0 = -1° sebagai standard terbit astronomis
-    const hTerbitRad = -1.0 * Math.PI / 180;
-    const cosTTerbit = (Math.sin(hTerbitRad) - Math.sin(latRad) * Math.sin(dekRad)) / (Math.cos(latRad) * Math.cos(dekRad));
-    let terbitDesimal = zuhurDesimal;
-    if (Math.abs(cosTTerbit) <= 1) {
-        const tTerbit = Math.acos(cosTTerbit) * 180 / Math.PI;
-        // Terbit = Mer. Pass - t:15 - I - i (dikurangi ikhtiyat)
-        terbitDesimal = meridianPass - (tTerbit / 15) - interpolasi - (ikhtiyatMenit / 60);
-    }
-    // 6. Hitung Subuh & Isya
-    // Muhammadiyah & Kemenag: Subuh h = -20°, Isya h = -18°
-    const subuhH = -20.0;
-    const isyaH = -18.0;
-    const hSubuhRad = subuhH * Math.PI / 180;
-    const cosTSubuh = (Math.sin(hSubuhRad) - Math.sin(latRad) * Math.sin(dekRad)) / (Math.cos(latRad) * Math.cos(dekRad));
-    let subuhDesimal = zuhurDesimal;
-    if (Math.abs(cosTSubuh) <= 1) {
-        const tSubuh = Math.acos(cosTSubuh) * 180 / Math.PI;
-        subuhDesimal = meridianPass - (tSubuh / 15) - interpolasi + (ikhtiyatMenit / 60);
-    }
-    const hIsyaRad = isyaH * Math.PI / 180;
-    const cosTIsya = (Math.sin(hIsyaRad) - Math.sin(latRad) * Math.sin(dekRad)) / (Math.cos(latRad) * Math.cos(dekRad));
-    let isyaDesimal = zuhurDesimal;
-    if (Math.abs(cosTIsya) <= 1) {
-        const tIsya = Math.acos(cosTIsya) * 180 / Math.PI;
-        isyaDesimal = meridianPass + (tIsya / 15) - interpolasi + (ikhtiyatMenit / 60);
-    }
-    // 7. Hitung Dhuha (ketinggian h = 4.5°)
-    const hDhuhaRad = 4.5 * Math.PI / 180;
-    const cosTDhuha = (Math.sin(hDhuhaRad) - Math.sin(latRad) * Math.sin(dekRad)) / (Math.cos(latRad) * Math.cos(dekRad));
-    let dhuhaDesimal = zuhurDesimal;
-    if (Math.abs(cosTDhuha) <= 1) {
-        const tDhuha = Math.acos(cosTDhuha) * 180 / Math.PI;
-        // Dhuha = Mer. Pass - t:15 - I + i (atau sesuai modul)
-        dhuhaDesimal = meridianPass - (tDhuha / 15) - interpolasi + (ikhtiyatMenit / 60);
-    }
-    // 8. Imsak = Subuh - 10 menit
-    const imsakDesimal = subuhDesimal - (10 / 60);
-    // Format tanggal ke YYYY-MM-DD
+    // 7. Dhuha
+    const tDhuha = sudutWaktu(p.hDhuha, latRad, dekRad);
+    const dhuhaDesimal = tDhuha === null ? zuhurDesimal : meridianPass - tDhuha / 15 - interpolasi + ikh;
+    // 8. Imsak = Subuh - imsakMenit
+    const imsakDesimal = subuhDesimal - p.imsakMenit / 60;
     const yyyy = tanggal.getFullYear();
     const mm = (tanggal.getMonth() + 1).toString().padStart(2, '0');
     const dd = tanggal.getDate().toString().padStart(2, '0');
-    const tanggalStr = `${yyyy}-${mm}-${dd}`;
     return {
-        tanggal: tanggalStr,
+        tanggal: `${yyyy}-${mm}-${dd}`,
         imsak: formatJamDesimal(imsakDesimal, true),
         subuh: formatJamDesimal(subuhDesimal, true),
         terbit: formatJamDesimal(terbitDesimal, false), // Terbit dibulatkan ke bawah/aman
@@ -189,6 +336,51 @@ metode = 'Muhammadiyah', ikhtiyatMenit = 2) {
         asar: formatJamDesimal(asarDesimal, true),
         magrib: formatJamDesimal(magribDesimal, true),
         isya: formatJamDesimal(isyaDesimal, true),
+        metode,
+        mazhabAsar: mazhab,
+        ikhtiyatMenit,
+        parameter: p,
+        rincian: {
+            deklinasi,
+            eot,
+            meridianPass,
+            interpolasi,
+            dip,
+            hMagrib: hMagribDeg,
+            hAsar: hAsarDeg,
+            faktorBayanganAsar: faktorBayangan,
+            isyaBerbasisInterval,
+        },
     };
+}
+/** Mengubah "HH:mm" menjadi menit sejak tengah malam. */
+function menitDariJam(hhmm) {
+    const [h, m] = hhmm.split(':').map(Number);
+    return h * 60 + m;
+}
+/**
+ * Menghitung jadwal salat untuk SEMUA metode yang tersedia pada satu titik & tanggal,
+ * lengkap dengan selisihnya terhadap metode acuan.
+ *
+ * Dipakai halaman edukasi/informasi agar pengguna bisa melihat perbedaan kriteria
+ * secara terbuka â€” bukan disodori satu angka tanpa pembanding (AGENTS.md poin 3).
+ */
+export function bandingkanMetode(coordinate, tanggal, timezoneOffset, elevation = 0, ikhtiyatMenit = 2, metodeAcuan = 'Muhammadiyah', mazhabAsar) {
+    const acuan = hitungJadwalSalat(coordinate, tanggal, timezoneOffset, elevation, metodeAcuan, ikhtiyatMenit, undefined, mazhabAsar);
+    return URUTAN_METODE.map((metode) => {
+        const jadwal = hitungJadwalSalat(coordinate, tanggal, timezoneOffset, elevation, metode, ikhtiyatMenit, undefined, mazhabAsar);
+        return {
+            metode,
+            parameter: jadwal.parameter,
+            jadwal,
+            selisihMenit: {
+                subuh: menitDariJam(jadwal.subuh) - menitDariJam(acuan.subuh),
+                zuhur: menitDariJam(jadwal.zuhur) - menitDariJam(acuan.zuhur),
+                asar: menitDariJam(jadwal.asar) - menitDariJam(acuan.asar),
+                magrib: menitDariJam(jadwal.magrib) - menitDariJam(acuan.magrib),
+                isya: menitDariJam(jadwal.isya) - menitDariJam(acuan.isya),
+            },
+        };
+    });
 }
 //# sourceMappingURL=prayer-times.js.map

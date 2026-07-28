@@ -1,96 +1,23 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
-import { hitungArahKiblat } from 'hisab-core';
+import { formatJarak } from 'hisab-core';
+import { ambilMasjidOsmDenganCache, MasjidOsm } from '@/lib/osm';
 
-// ── Types ────────────────────────────────────────────────────────────────────
-interface OsmMosque {
-  id: number;
-  lat: number;
-  lng: number;
-  name: string;
-  address: string;
-  distance: number; // km
-  qiblaAzimuth: number; // degrees
-}
-
-// ── Haversine distance (km) ──────────────────────────────────────────────────
-function haversine(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-// ── Fetch mosques from Overpass API (OpenStreetMap) ──────────────────────────
-async function fetchMosquesFromOSM(lat: number, lng: number, radiusKm: number): Promise<OsmMosque[]> {
-  const radiusM = radiusKm * 1000;
-  const query = `
-    [out:json][timeout:25];
-    (
-      node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${lat},${lng});
-      way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${lat},${lng});
-    );
-    out center tags;
-  `;
-
-  const response = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `data=${encodeURIComponent(query)}`,
-  });
-
-  if (!response.ok) throw new Error(`Overpass API error: ${response.status}`);
-
-  const data = await response.json();
-
-  const mosques: OsmMosque[] = (data.elements as Array<{
-    id: number;
-    lat?: number;
-    lon?: number;
-    center?: { lat: number; lon: number };
-    tags?: Record<string, string>;
-  }>)
-    .filter((el) => el.lat !== undefined || el.center !== undefined)
-    .map((el) => {
-      const mLat = el.lat ?? el.center!.lat;
-      const mLng = el.lon ?? el.center!.lon;
-      const tags = el.tags ?? {};
-
-      const name =
-        tags['name:id'] || tags['name'] || tags['name:en'] || 'Masjid/Musala';
-
-      // Build address from OSM tags
-      const addressParts = [
-        tags['addr:street'] && tags['addr:housenumber']
-          ? `${tags['addr:street']} No. ${tags['addr:housenumber']}`
-          : tags['addr:street'],
-        tags['addr:suburb'] || tags['addr:village'] || tags['addr:hamlet'],
-        tags['addr:city'] || tags['addr:district'],
-      ].filter(Boolean);
-      const address = addressParts.length > 0
-        ? addressParts.join(', ')
-        : `${mLat.toFixed(5)}, ${mLng.toFixed(5)}`;
-
-      const distance = haversine(lat, lng, mLat, mLng);
-      let qiblaAzimuth = 0;
-      try {
-        qiblaAzimuth = hitungArahKiblat({ lat: mLat, lng: mLng }).azimuthKiblat.decimal;
-      } catch { /* ignore */ }
-
-      return { id: el.id, lat: mLat, lng: mLng, name, address, distance, qiblaAzimuth };
-    })
-    .sort((a, b) => a.distance - b.distance);
-
-  return mosques;
-}
+// MapLibre butuh `window` → hanya dimuat di klien.
+const PetaMasjidTerdekat = dynamic(() => import('@/components/features/PetaMasjidTerdekat'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-72 rounded-xl border border-card-border/50 bg-foreground/[0.03] flex items-center justify-center">
+      <div className="w-6 h-6 border-2 border-sifa-green-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+});
 
 // ── Radius options ─────────────────────────────────────────────────────────
 const RADIUS_OPTIONS = [
@@ -106,38 +33,21 @@ export default function DirektoriPage() {
   const [locationPhase, setLocationPhase] = useState<'gps' | 'fetching' | 'done' | 'error'>('gps');
   const [gpsError, setGpsError] = useState<string | null>(null);
 
-  const [mosques, setMosques] = useState<OsmMosque[]>([]);
+  const [mosques, setMosques] = useState<MasjidOsm[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const [radius, setRadius] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // ── Fetch mosques from OSM when location + radius are ready ────────────────
+  // ── Ambil masjid dari OSM lewat lib bersama (query & cache ada di lib/osm.ts) ──
   const loadMosques = useCallback(async (lat: number, lng: number, r: number) => {
     setLocationPhase('fetching');
     setFetchError(null);
 
-    const cacheKey = `osm_mosques_${lat.toFixed(3)}_${lng.toFixed(3)}_${r}`;
     try {
-      // Check sessionStorage cache (5-minute TTL)
-      const cached = sessionStorage.getItem(cacheKey);
-      if (cached) {
-        const { data, ts } = JSON.parse(cached) as { data: OsmMosque[]; ts: number };
-        if (Date.now() - ts < 5 * 60 * 1000) {
-          setMosques(data);
-          setLocationPhase('done');
-          return;
-        }
-      }
-    } catch { /* ignore storage errors */ }
-
-    try {
-      const data = await fetchMosquesFromOSM(lat, lng, r);
+      const { data } = await ambilMasjidOsmDenganCache(lat, lng, r);
       setMosques(data);
       setLocationPhase('done');
-      try {
-        sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
-      } catch { /* ignore */ }
     } catch (e) {
       console.error(e);
       setFetchError('Gagal mengambil data masjid dari OpenStreetMap. Periksa koneksi internet Anda dan coba lagi.');
@@ -203,12 +113,11 @@ export default function DirektoriPage() {
   };
 
   const filtered = mosques.filter((m) =>
-    m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.address.toLowerCase().includes(searchTerm.toLowerCase())
+    m.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.alamat.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatDist = (d: number) =>
-    d < 1 ? `${Math.round(d * 1000)} m` : `${d.toFixed(2)} km`;
+  const formatDist = (d: number) => formatJarak(d);
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
@@ -356,6 +265,15 @@ export default function DirektoriPage() {
             </button>
           </div>
 
+          {/* Peta interaktif OSM — sebaran masjid/musala hasil pencarian */}
+          <PetaMasjidTerdekat
+            lat={userLoc.lat}
+            lng={userLoc.lng}
+            masjid={filtered}
+            tinggiKelas="h-72"
+            zoom={radius <= 1 ? 15 : radius <= 3 ? 14 : radius <= 5 ? 13 : 12}
+          />
+
           {/* Mosque Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {filtered.map((m, idx) => (
@@ -376,20 +294,20 @@ export default function DirektoriPage() {
                         </span>
                       )}
                       <h3 className="font-heading font-extrabold text-sm text-sifa-green-900 dark:text-sifa-green-100 leading-tight">
-                        {m.name}
+                        <span aria-hidden="true">{m.jenis === 'masjid' ? '🕌' : '🛐'}</span> {m.nama}
                       </h3>
                     </div>
                     <Badge variant="green" className="bg-sifa-green-900 text-white font-extrabold text-[9px] whitespace-nowrap shrink-0">
-                      📍 {formatDist(m.distance)}
+                      📍 {formatDist(m.jarakKm)}
                     </Badge>
                   </div>
 
                   <p className="text-xs text-foreground/65 leading-relaxed">
-                    {m.address}
+                    {m.alamat}
                   </p>
 
                   <div className="flex items-center gap-2 text-[10px] font-mono text-foreground/50">
-                    <span>🧭 Kiblat: <span className="text-sifa-gold-600 font-bold">{m.qiblaAzimuth.toFixed(1)}°</span></span>
+                    <span>🧭 Kiblat: <span className="text-sifa-gold-600 font-bold">{m.azimuthKiblat.toFixed(1)}°</span></span>
                     <span>·</span>
                     <span>{m.lat.toFixed(4)}°, {m.lng.toFixed(4)}°</span>
                   </div>

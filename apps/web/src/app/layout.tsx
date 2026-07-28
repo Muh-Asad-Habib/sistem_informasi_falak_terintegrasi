@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Plus_Jakarta_Sans, Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
@@ -23,11 +23,47 @@ const arabic = Noto_Naskh_Arabic({
 });
 
 import { SifaLogo } from "@/components/ui/SifaLogo";
+import OfflineStatus from "@/components/features/OfflineStatus";
 
 export const metadata: Metadata = {
-  title: "SIFA — Sistem Informasi Falak Terintegrasi",
-  description: "Aplikasi Arah Kiblat, Jadwal Salat & Kalender Hijriah Terpadu tingkat Kampus & AUM. Berdasarkan Pedoman Muhammadiyah dan KHGT.",
+  title: {
+    default: "SIFA — Sistem Informasi Falak Terintegrasi",
+    template: "%s — SIFA",
+  },
+  description:
+    "Aplikasi Arah Kiblat, Jadwal Salat & Kalender Hijriah Terpadu tingkat Kampus & AUM. Berdasarkan Pedoman Muhammadiyah dan KHGT.",
+  applicationName: "SIFA",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "SIFA",
+    statusBarStyle: "default",
+  },
+  openGraph: {
+    type: "website",
+    locale: "id_ID",
+    siteName: "SIFA",
+    title: "SIFA — Sistem Informasi Falak Terintegrasi",
+    description:
+      "Arah kiblat, jadwal salat, dan kalender Hijriah dengan hisab yang bisa ditelusuri langkah demi langkah.",
+  },
 };
+
+export const viewport: Viewport = {
+  themeColor: "#0d3b2e",
+  width: "device-width",
+  initialScale: 1,
+};
+
+const NAV_LINKS = [
+  { href: "/kiblat", label: "Arah Kiblat" },
+  { href: "/waktu-salat", label: "Jadwal Salat" },
+  { href: "/kalender", label: "Kalender" },
+  { href: "/edukasi", label: "Edukasi" },
+  { href: "/direktori", label: "Direktori Masjid" },
+  { href: "/layar-masjid", label: "Layar Masjid" },
+  { href: "/takmir", label: "Takmir" },
+];
 
 export default function RootLayout({
   children,
@@ -37,32 +73,44 @@ export default function RootLayout({
   return (
     <html lang="id" className={`${fraunces.variable} ${jakarta.variable} ${arabic.variable} font-sans`}>
       <body className="min-h-screen flex flex-col bg-background text-foreground antialiased selection:bg-sifa-green-100 selection:text-sifa-green-900">
-        
+
+        <a
+          href="#konten-utama"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:bg-sifa-green-900 focus:text-white focus:px-4 focus:py-2 focus:rounded-xl focus:text-xs focus:font-bold"
+        >
+          Lompat ke konten utama
+        </a>
+
+        <OfflineStatus />
+
         {/* Navigation Header */}
         <header className="sticky top-0 z-40 w-full border-b border-card-border bg-background/80 backdrop-blur-md">
           <div className="mx-auto max-w-4xl px-4 h-16 flex items-center justify-between">
-            <Link href="/">
+            <Link href="/" aria-label="SIFA — Beranda">
               <SifaLogo size="md" />
             </Link>
 
             {/* Desktop Nav links */}
-            <nav className="hidden md:flex items-center gap-6 text-sm font-semibold">
-              <Link href="/kiblat" className="text-foreground/80 hover:text-sifa-green-900 transition-colors">Arah Kiblat</Link>
-              <Link href="/waktu-salat" className="text-foreground/80 hover:text-sifa-green-900 transition-colors">Jadwal Salat</Link>
-              <Link href="/kalender" className="text-foreground/80 hover:text-sifa-green-900 transition-colors">Kalender</Link>
-              <Link href="/edukasi" className="text-foreground/80 hover:text-sifa-green-900 transition-colors">Edukasi</Link>
-              <Link href="/direktori" className="text-foreground/80 hover:text-sifa-green-900 transition-colors">Direktori Masjid</Link>
-              <Link href="/takmir" className="text-foreground/80 hover:text-sifa-green-900 transition-colors">Takmir</Link>
+            <nav aria-label="Navigasi utama" className="hidden md:flex items-center gap-5 text-sm font-semibold">
+              {NAV_LINKS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="text-foreground/80 hover:text-sifa-green-900 transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </nav>
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8 mushaf-grid">
+        <main id="konten-utama" className="flex-1 w-full max-w-4xl mx-auto px-4 py-6 pb-24 md:pb-8 mushaf-grid">
           {children}
         </main>
 
-        <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/90 backdrop-blur-md border-t border-card-border px-4 py-2 flex items-center justify-around shadow-lg">
+        <nav aria-label="Navigasi cepat" className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/90 backdrop-blur-md border-t border-card-border px-4 py-2 flex items-center justify-around shadow-lg">
           <Link href="/" className="flex flex-col items-center gap-1 text-foreground/75 hover:text-sifa-green-900 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />

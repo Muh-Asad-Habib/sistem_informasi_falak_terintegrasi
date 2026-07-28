@@ -4,7 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import PrayerCountdown from '@/components/features/PrayerCountdown';
-import { hitungJadwalSalat, PrayerTimesResult, HisabMetode } from 'hisab-core';
+import PerbandinganMetode from '@/components/features/PerbandinganMetode';
+import { hitungJadwalSalat, PrayerTimesResult, HisabMetode, MazhabAsar, PARAMETER_METODE, daftarMetode } from 'hisab-core';
+
+const METODE_TERSEDIA = daftarMetode();
 
 export default function WaktuSalatPage() {
   // Lokasi default (Unismuh Makassar)
@@ -14,6 +17,7 @@ export default function WaktuSalatPage() {
   const [timezoneInput, setTimezoneInput] = useState('8'); // WITA
 
   const [metode, setMetode] = useState<HisabMetode>('Muhammadiyah');
+  const [mazhabAsar, setMazhabAsar] = useState<MazhabAsar>('Syafii');
   const [ikhtiyat, setIkhtiyat] = useState(2);
   
   const [currentSchedule, setCurrentSchedule] = useState<PrayerTimesResult | null>(null);
@@ -30,7 +34,8 @@ export default function WaktuSalatPage() {
     elevStr: string,
     tzStr: string,
     m: HisabMetode,
-    ikh: number
+    ikh: number,
+    mazhab: MazhabAsar = mazhabAsar
   ) => {
     try {
       setErrorMsg(null);
@@ -45,7 +50,7 @@ export default function WaktuSalatPage() {
 
       const today = new Date();
       // Hitung jadwal hari ini
-      const todaySched = hitungJadwalSalat({ lat, lng }, today, tz, elev, m, ikh);
+      const todaySched = hitungJadwalSalat({ lat, lng }, today, tz, elev, m, ikh, undefined, mazhab);
       setCurrentSchedule(todaySched);
 
       // Hitung jadwal 30 hari ke depan
@@ -53,7 +58,7 @@ export default function WaktuSalatPage() {
       for (let i = 0; i < 30; i++) {
         const nextDate = new Date();
         nextDate.setDate(today.getDate() + i);
-        scheds.push(hitungJadwalSalat({ lat, lng }, nextDate, tz, elev, m, ikh));
+        scheds.push(hitungJadwalSalat({ lat, lng }, nextDate, tz, elev, m, ikh, undefined, mazhab));
       }
       setMonthlySchedule(scheds);
 
@@ -112,13 +117,13 @@ export default function WaktuSalatPage() {
 
   // 2. Re-calculate when parameters change
   useEffect(() => {
-    handleCalculate(latInput, lngInput, elevationInput, timezoneInput, metode, ikhtiyat);
+    handleCalculate(latInput, lngInput, elevationInput, timezoneInput, metode, ikhtiyat, mazhabAsar);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [metode, ikhtiyat, latInput, lngInput, elevationInput, timezoneInput]);
+  }, [metode, mazhabAsar, ikhtiyat, latInput, lngInput, elevationInput, timezoneInput]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleCalculate(latInput, lngInput, elevationInput, timezoneInput, metode, ikhtiyat);
+    handleCalculate(latInput, lngInput, elevationInput, timezoneInput, metode, ikhtiyat, mazhabAsar);
   };
 
   const handleGetLocation = () => {
@@ -173,7 +178,8 @@ export default function WaktuSalatPage() {
           Jadwal Waktu Salat
         </h1>
         <p className="text-sm text-foreground/60">
-          Dapatkan jadwal waktu salat harian & 30 hari ke depan dengan preset kriteria Muhammadiyah/Kemenag.
+          Jadwal harian & 30 hari ke depan dengan {METODE_TERSEDIA.length} pilihan kriteria hisab
+          (Muhammadiyah, Kemenag/MABIMS, NU, MWL, ISNA, Umm al-Qura, dan lainnya) serta pilihan mazhab awal Asar.
         </p>
       </div>
 
@@ -188,7 +194,7 @@ export default function WaktuSalatPage() {
           <div className="flex flex-col gap-1">
             <span className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 text-sm">Tentang Hisab Waktu Salat</span>
             <p className="text-xs leading-relaxed text-foreground/70">
-              Waktu salat dalam Islam ditentukan berdasarkan <strong>posisi nyata Matahari</strong> di langit. Sistem ini menghitung <strong>Deklinasi Matahari (δ)</strong>, <strong>Equation of Time (e)</strong>, dan <strong>Sudut Waktu (t)</strong> untuk menentukan saat matahari mencapai ketinggian tertentu: Subuh (h = −20°), Terbit/Magrib (h ≈ −0.83° dikurangi koreksi dip), Asar (bayangan sama dengan tinggi benda + 1× panjangnya), dan Isya (h = −18°). Ikhtiyat menambah margin kehati-hatian agar umat tidak terlewat waktu salat.
+              Waktu salat dalam Islam ditentukan berdasarkan <strong>posisi nyata Matahari</strong> di langit. Sistem ini menghitung <strong>Deklinasi Matahari (δ)</strong>, <strong>Equation of Time (e)</strong>, dan <strong>Sudut Waktu (t)</strong> untuk menentukan saat Matahari mencapai ketinggian (h) tertentu pada tiap waktu salat. Nilai h yang dipakai mengikuti kriteria yang Anda pilih — daftar lengkapnya beserta sumbernya bisa dilihat pada panel <em>Transparansi Hisab</em> di bawah. Ikhtiyat menambah margin kehati-hatian agar umat tidak terlewat waktu salat.
             </p>
           </div>
         </div>
@@ -254,15 +260,53 @@ export default function WaktuSalatPage() {
 
               {/* Metode Hisab */}
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Kriteria Hisab</label>
+                <label htmlFor="ws-metode" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Kriteria Hisab</label>
                 <select
+                  id="ws-metode"
                   value={metode}
                   onChange={(e) => setMetode(e.target.value as HisabMetode)}
                   className="px-3 py-2.5 rounded-xl border border-card-border bg-background text-xs font-semibold focus:outline-none"
                 >
-                  <option value="Muhammadiyah">Muhammadiyah (Subuh -20°, Isya -18°)</option>
-                  <option value="Kemenag">Kemenag RI (Subuh -20°, Isya -18°)</option>
+                  <optgroup label="Indonesia & Asia Tenggara">
+                    {METODE_TERSEDIA.filter((m) => m.parameter.wilayah.includes('Indonesia') || m.parameter.wilayah.includes('Singapura')).map(({ metode: key, parameter }) => (
+                      <option key={key} value={key}>
+                        {parameter.label} (Subuh {parameter.hSubuh}°, Isya {parameter.isyaMenitSetelahMagrib ? `${parameter.isyaMenitSetelahMagrib} mnt` : `${parameter.hIsya}°`})
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Internasional">
+                    {METODE_TERSEDIA.filter((m) => !(m.parameter.wilayah.includes('Indonesia') || m.parameter.wilayah.includes('Singapura'))).map(({ metode: key, parameter }) => (
+                      <option key={key} value={key}>
+                        {parameter.label} (Subuh {parameter.hSubuh}°, Isya {parameter.isyaMenitSetelahMagrib ? `${parameter.isyaMenitSetelahMagrib} mnt` : `${parameter.hIsya}°`})
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
+                <span className="text-[10px] text-foreground/45 mt-0.5 leading-relaxed">
+                  {PARAMETER_METODE[metode].wilayah} · {PARAMETER_METODE[metode].sumber}
+                </span>
+                {PARAMETER_METODE[metode].statusRujukan === 'perlu_konfirmasi' && (
+                  <span className="text-[10px] text-sifa-gold-700 dark:text-sifa-gold-400 font-semibold leading-relaxed">
+                    ⚠️ Rujukan preset ini belum diverifikasi tim SIFA ke terbitan resmi lembaga terkait — pakai sebagai pembanding, bukan rujukan final.
+                  </span>
+                )}
+              </div>
+
+              {/* Mazhab Asar */}
+              <div className="flex flex-col gap-1">
+                <label htmlFor="ws-mazhab" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Mazhab Awal Asar</label>
+                <select
+                  id="ws-mazhab"
+                  value={mazhabAsar}
+                  onChange={(e) => setMazhabAsar(e.target.value as MazhabAsar)}
+                  className="px-3 py-2.5 rounded-xl border border-card-border bg-background text-xs font-semibold focus:outline-none"
+                >
+                  <option value="Syafii">Syafi&apos;i / Maliki / Hanbali — bayangan 1× tinggi benda</option>
+                  <option value="Hanafi">Hanafi — bayangan 2× tinggi benda</option>
+                </select>
+                <span className="text-[10px] text-foreground/45 mt-0.5 leading-relaxed">
+                  Hanya mempengaruhi waktu Asar: cotan h = tan|φ − δ| + {mazhabAsar === 'Hanafi' ? '2' : '1'}.
+                </span>
               </div>
 
               {/* Ikhtiyat Slider */}
@@ -413,6 +457,19 @@ export default function WaktuSalatPage() {
         </Card>
       )}
 
+      {/* Perbandingan seluruh kriteria hisab */}
+      {currentSchedule && (
+        <PerbandinganMetode
+          lat={parseFloat(latInput)}
+          lng={parseFloat(lngInput)}
+          timezone={parseFloat(timezoneInput)}
+          elevation={parseFloat(elevationInput) || 0}
+          ikhtiyat={ikhtiyat}
+          metodeAcuan={metode}
+          mazhabAsar={mazhabAsar}
+        />
+      )}
+
       {/* Transparansi Hisab */}
       {currentSchedule && (
         <Card className="w-full flex flex-col gap-4">
@@ -452,35 +509,71 @@ export default function WaktuSalatPage() {
                 </div>
               </div>
 
-              {/* Table of h angles */}
+              {/* Table of h angles — dibaca langsung dari parameter yang dipakai hisab-core */}
               <div className="rounded-xl border border-card-border overflow-hidden">
                 <div className="px-4 py-3 bg-foreground/5 border-b border-card-border">
-                  <span className="text-xs font-bold text-foreground/60 uppercase tracking-wide">Ketinggian Matahari (h) per Waktu Salat</span>
+                  <span className="text-xs font-bold text-foreground/60 uppercase tracking-wide">
+                    Ketinggian Matahari (h) yang benar-benar dipakai — metode {currentSchedule.parameter.label} · Asar {currentSchedule.mazhabAsar === 'Hanafi' ? 'Hanafi (2×)' : "Syafi'i (1×)"}
+                  </span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="border-b border-card-border">
-                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Waktu</th>
-                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Metode ({metode})</th>
-                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Ketinggian h</th>
-                        <th className="text-left py-2 px-4 font-bold text-foreground/50">Keterangan</th>
+                        <th scope="col" className="text-left py-2 px-4 font-bold text-foreground/50">Waktu</th>
+                        <th scope="col" className="text-left py-2 px-4 font-bold text-foreground/50">Ketinggian h</th>
+                        <th scope="col" className="text-left py-2 px-4 font-bold text-foreground/50">Keterangan</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-card-border/40">
                       {[
-                        { waktu: 'Imsak', h: '−20° + 10 menit', ket: '10 menit sebelum Subuh' },
-                        { waktu: 'Subuh', h: metode === 'Muhammadiyah' ? '−20°' : '−20°', ket: 'Fajar shadiq (astronomical twilight)' },
-                        { waktu: 'Terbit', h: '−0.833° − dip', ket: 'Koreksi refraksi + dip elevasi' },
-                        { waktu: 'Dhuha', h: '≈ +4.5°', ket: '16 menit setelah Terbit' },
-                        { waktu: 'Zuhur', h: 'Transit', ket: 'Matahari di meridian (kulminasi atas)' },
-                        { waktu: 'Asar', h: 'tan(h) = 1/tan(|φ−δ|) + 1', ket: 'Bayangan = panjang benda + 1× (Syafii)' },
-                        { waktu: 'Magrib', h: '−0.833° − dip', ket: 'Koreksi refraksi + dip elevasi' },
-                        { waktu: 'Isya', h: metode === 'Muhammadiyah' ? '−18°' : '−18°', ket: 'Syafak merah hilang (astronomical dusk)' },
+                        {
+                          waktu: 'Imsak',
+                          h: `Subuh − ${currentSchedule.parameter.imsakMenit} menit`,
+                          ket: 'Turunan dari waktu Subuh',
+                        },
+                        {
+                          waktu: 'Subuh',
+                          h: `${currentSchedule.parameter.hSubuh.toFixed(2)}°`,
+                          ket: 'Fajar shadiq (astronomical twilight)',
+                        },
+                        {
+                          waktu: 'Terbit',
+                          h: `${currentSchedule.parameter.hTerbit.toFixed(2)}°`,
+                          ket: 'Dikurangi ikhtiyat (arah kehati-hatian berlawanan)',
+                        },
+                        {
+                          waktu: 'Dhuha',
+                          h: `+${currentSchedule.parameter.hDhuha.toFixed(2)}°`,
+                          ket: 'Matahari setinggi ± satu tombak',
+                        },
+                        {
+                          waktu: 'Zuhur',
+                          h: 'Transit (Mer. Pass)',
+                          ket: `Mer. Pass = 12 − e = ${currentSchedule.rincian.meridianPass.toFixed(4)} jam`,
+                        },
+                        {
+                          waktu: 'Asar',
+                          h: `${currentSchedule.rincian.hAsar.toFixed(2)}°`,
+                          ket: `cotan h = tan|φ − δ| + ${currentSchedule.rincian.faktorBayanganAsar} (bayangan = tinggi benda + ${currentSchedule.rincian.faktorBayanganAsar}×, mazhab ${currentSchedule.mazhabAsar === 'Hanafi' ? 'Hanafi' : "Syafi'i"})`,
+                        },
+                        {
+                          waktu: 'Magrib',
+                          h: `${currentSchedule.rincian.hMagrib.toFixed(4)}°`,
+                          ket: `−(SD ${currentSchedule.parameter.semiDiameterMenitBusur}' + refraksi ${currentSchedule.parameter.refraksiMenitBusur}' + dip ${(currentSchedule.rincian.dip * 60).toFixed(2)}')`,
+                        },
+                        {
+                          waktu: 'Isya',
+                          h: currentSchedule.rincian.isyaBerbasisInterval
+                            ? `Magrib + ${currentSchedule.parameter.isyaMenitSetelahMagrib} menit`
+                            : `${currentSchedule.parameter.hIsya.toFixed(2)}°`,
+                          ket: currentSchedule.rincian.isyaBerbasisInterval
+                            ? 'Kriteria ini memakai selang waktu tetap setelah Magrib, bukan ketinggian matahari'
+                            : 'Syafak merah hilang (astronomical dusk)',
+                        },
                       ].map((row, i) => (
                         <tr key={i} className="hover:bg-foreground/[0.02]">
-                          <td className="py-2 px-4 font-bold text-sifa-green-900 dark:text-sifa-green-100">{row.waktu}</td>
-                          <td className="py-2 px-4 font-mono text-sifa-gold-600">{row.h}</td>
+                          <th scope="row" className="text-left py-2 px-4 font-bold text-sifa-green-900 dark:text-sifa-green-100">{row.waktu}</th>
                           <td className="py-2 px-4 font-mono text-sifa-gold-600">{row.h}</td>
                           <td className="py-2 px-4 text-foreground/60">{row.ket}</td>
                         </tr>
@@ -488,13 +581,34 @@ export default function WaktuSalatPage() {
                     </tbody>
                   </table>
                 </div>
+                <div className="px-4 py-3 border-t border-card-border bg-foreground/[0.02] flex flex-col gap-1">
+                  <span className="text-[10px] text-foreground/60">
+                    <strong>Sumber parameter:</strong> {currentSchedule.parameter.sumber}
+                  </span>
+                  {currentSchedule.parameter.catatan && (
+                    <span className="text-[10px] text-foreground/50 italic">
+                      {currentSchedule.parameter.catatan}
+                    </span>
+                  )}
+                  <span className="text-[10px] font-mono text-foreground/50">
+                    δ = {currentSchedule.rincian.deklinasi.toFixed(4)}° · e ={' '}
+                    {currentSchedule.rincian.eot.toFixed(4)} menit · KWB ={' '}
+                    {currentSchedule.rincian.interpolasi.toFixed(4)} jam
+                  </span>
+                </div>
               </div>
 
               {/* Ikhtiyat explanation */}
               <div className="rounded-xl bg-sifa-green-50 dark:bg-sifa-green-900/20 border border-sifa-green-200 dark:border-sifa-green-900/30 p-4">
-                <div className="font-bold text-sifa-green-900 dark:text-sifa-green-100 text-xs uppercase tracking-wide mb-2">Ikhtiyat (Kehati-hatian) = {ikhtiyat} Menit</div>
+                <div className="font-bold text-sifa-green-900 dark:text-sifa-green-100 text-xs uppercase tracking-wide mb-2">
+                  Ikhtiyat (Kehati-hatian) = {currentSchedule.ikhtiyatMenit} Menit
+                </div>
                 <p className="text-xs text-foreground/70 leading-relaxed">
-                  Ikhtiyat adalah margin kehati-hatian yang ditambahkan pada setiap awal waktu salat (kecuali Magrib dan Isya dikurangi). Nilai standar adalah 1–3 menit untuk menghindari kekeliruan akibat ketidaktepatan jam atau perbedaan lokasi dalam satu kota. SIFA saat ini menggunakan ikhtiyat {ikhtiyat} menit.
+                  Ikhtiyat adalah margin kehati-hatian yang <strong>ditambahkan</strong> pada awal
+                  waktu Subuh, Dhuha, Zuhur, Asar, Magrib, dan Isya, serta{' '}
+                  <strong>dikurangkan</strong> pada waktu Terbit agar arah kehati-hatiannya tetap
+                  aman. Nilai lazim 1–3 menit untuk menutup ketidaktepatan jam maupun beda posisi
+                  dalam satu kota. Perhitungan di halaman ini memakai {currentSchedule.ikhtiyatMenit} menit.
                 </p>
               </div>
             </div>

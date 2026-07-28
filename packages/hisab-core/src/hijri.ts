@@ -1,6 +1,143 @@
 import { getSunEclipticLongitude, getMoonCoordinates, getElongation } from './ephemeris.js';
-import { getJulianDate } from './prayer-times.js';
+import { getJulianDate, hitungJadwalSalat } from './prayer-times.js';
 import { Coordinate } from './types.js';
+import { HisabError } from './errors.js';
+
+/** Nama 12 bulan Hijriah sesuai urutan. */
+export const NAMA_BULAN_HIJRIAH = [
+  'Muharram', 'Safar', "Rabi'ul Awal", "Rabi'ul Akhir",
+  'Jumadil Awal', 'Jumadil Akhir', 'Rajab', "Sya'ban",
+  'Ramadan', 'Syawal', 'Zulkaidah', 'Zulhijjah',
+] as const;
+
+/** Kriteria penetapan awal bulan Hijriah yang tersedia untuk dibandingkan. */
+export type KriteriaHijriah =
+  | 'WujudulHilal'
+  | 'KHGT'
+  | 'MABIMS'
+  | 'MABIMSLama'
+  | 'Istanbul';
+
+export type StatusRujukanKriteria = 'terverifikasi' | 'perlu_konfirmasi';
+
+export interface ParameterKriteriaHijriah {
+  label: string;
+  organisasi: string;
+  /** `lokal` = diuji pada markaz pengamat; `global` = satu keputusan untuk seluruh dunia */
+  jenis: 'lokal' | 'global';
+  /** Tinggi hilal minimum saat Magrib (derajat) */
+  minTinggiHilal: number;
+  /** Elongasi Bulan–Matahari minimum (derajat) */
+  minElongasi: number;
+  /** Umur bulan minimum sejak ijtimak (jam); 0 bila tidak disyaratkan */
+  minUmurBulanJam: number;
+  /** Apakah ijtimak wajib terjadi sebelum Magrib */
+  syaratIjtimakSebelumMagrib: boolean;
+  sumber: string;
+  statusRujukan: StatusRujukanKriteria;
+  catatan?: string;
+}
+
+/**
+ * Tabel ambang tiap kriteria.
+ *
+ * PENTING: angka di sini menentukan tanggal ibadah. Jangan mengubahnya tanpa rujukan
+ * resmi (AGENTS.md poin 1). Kriteria yang belum diverifikasi ke terbitan resmi
+ * ditandai `perlu_konfirmasi` dan status itu ikut ditampilkan di UI.
+ */
+export const PARAMETER_KRITERIA_HIJRIAH: Record<KriteriaHijriah, ParameterKriteriaHijriah> = {
+  WujudulHilal: {
+    label: 'Wujudul Hilal',
+    organisasi: 'Muhammadiyah (Majelis Tarjih dan Tajdid)',
+    jenis: 'lokal',
+    minTinggiHilal: 0,
+    minElongasi: 0,
+    minUmurBulanJam: 0,
+    syaratIjtimakSebelumMagrib: true,
+    sumber:
+      'Pedoman Hisab Muhammadiyah (Majelis Tarjih dan Tajdid) & Modul AIK IV Fakultas Teknik Unismuh Bab IV',
+    statusRujukan: 'terverifikasi',
+    catatan:
+      'Tiga syarat kumulatif: (1) telah terjadi ijtimak, (2) ijtimak terjadi sebelum Magrib, (3) saat Magrib piringan atas Bulan masih di atas ufuk (tinggi > 0°). Tidak mensyaratkan hilal dapat dirukyat.',
+  },
+  KHGT: {
+    label: 'KHGT (Kalender Hijriah Global Tunggal)',
+    organisasi: 'Muhammadiyah — Munas Tarjih, berlaku sejak 1 Muharram 1447 H',
+    jenis: 'global',
+    minTinggiHilal: 5,
+    minElongasi: 8,
+    minUmurBulanJam: 0,
+    syaratIjtimakSebelumMagrib: false,
+    sumber: 'Keputusan Munas Tarjih tentang Kalender Hijriah Global Tunggal (KHGT)',
+    statusRujukan: 'terverifikasi',
+    catatan:
+      'Matlak global: bila di suatu tempat di bumi elongasi ≥ 8° dan tinggi hilal ≥ 5° sebelum pukul 24:00 GMT, awal bulan berlaku seragam sedunia. Ambangnya mengadopsi kriteria Istanbul 2016.',
+  },
+  MABIMS: {
+    label: 'MABIMS Baru (3-6,4)',
+    organisasi: 'Brunei, Indonesia, Malaysia, Singapura — berlaku sejak 1443 H',
+    jenis: 'lokal',
+    minTinggiHilal: 3,
+    minElongasi: 6.4,
+    minUmurBulanJam: 0,
+    syaratIjtimakSebelumMagrib: true,
+    sumber: 'Kriteria imkanur rukyat MABIMS (hasil kesepakatan 2021, dipakai Kemenag RI sejak 1443 H)',
+    statusRujukan: 'perlu_konfirmasi',
+    catatan:
+      'Kriteria imkanur rukyat: hilal dianggap mungkin dirukyat bila tinggi ≥ 3° dan elongasi ≥ 6,4°. TODO: perlu konfirmasi rujukan cetak (Keputusan Menteri Agama / berita acara MABIMS).',
+  },
+  MABIMSLama: {
+    label: 'MABIMS Lama (2-3-8)',
+    organisasi: 'MABIMS — dipakai sebelum 1443 H',
+    jenis: 'lokal',
+    minTinggiHilal: 2,
+    minElongasi: 3,
+    minUmurBulanJam: 8,
+    syaratIjtimakSebelumMagrib: true,
+    sumber: 'Kriteria imkanur rukyat MABIMS lama (tinggi ≥ 2°, elongasi ≥ 3°, umur bulan ≥ 8 jam)',
+    statusRujukan: 'perlu_konfirmasi',
+    catatan:
+      'Disertakan sebagai pembanding historis agar pengguna paham mengapa keputusan awal bulan bisa berubah antar-tahun. TODO: perlu konfirmasi rujukan cetak.',
+  },
+  Istanbul: {
+    label: 'Istanbul 2016',
+    organisasi: 'Kongres Persatuan Kalender Hijriah Internasional, Istanbul',
+    jenis: 'lokal',
+    minTinggiHilal: 5,
+    minElongasi: 8,
+    minUmurBulanJam: 0,
+    syaratIjtimakSebelumMagrib: true,
+    sumber: 'Keputusan Kongres Kalender Hijriah Internasional Istanbul 2016',
+    statusRujukan: 'perlu_konfirmasi',
+    catatan:
+      'Ambangnya sama dengan KHGT, bedanya di sini diuji pada markaz lokal (bukan matlak global), sehingga hasilnya bisa berbeda dengan KHGT untuk tanggal yang sama.',
+  },
+};
+
+/** Urutan tampil kriteria di UI. */
+export const URUTAN_KRITERIA_HIJRIAH: KriteriaHijriah[] = [
+  'WujudulHilal',
+  'KHGT',
+  'MABIMS',
+  'MABIMSLama',
+  'Istanbul',
+];
+
+/** Hasil evaluasi satu kriteria terhadap satu kandidat awal bulan. */
+export interface EvaluasiKriteria {
+  kriteria: KriteriaHijriah;
+  parameter: ParameterKriteriaHijriah;
+  /** Tinggi hilal yang diuji (lokal atau global sesuai `jenis`), derajat */
+  tinggiHilal: number;
+  /** Elongasi yang diuji, derajat */
+  elongasi: number;
+  /** Umur bulan sejak ijtimak sampai Magrib yang diuji, jam */
+  umurBulanJam: number;
+  ijtimakSebelumMagrib: boolean;
+  terpenuhi: boolean;
+  /** Rincian syarat mana yang lolos/tidak — untuk transparansi di UI */
+  alasan: string;
+}
 
 export interface HijriKriteriaResult {
   hijriMonthName: string;
@@ -21,6 +158,11 @@ export interface HijriKriteriaResult {
   khgtElongasiGeosentris: number;
   khgtTinggiHilalGeosentris: number;
   khgtTerpenuhi: boolean;
+
+  /** Umur bulan (jam) dari ijtimak sampai Magrib lokal */
+  umurBulanJam: number;
+  /** Evaluasi SEMUA kriteria yang tersedia — ditampilkan berdampingan, tidak dipilih diam-diam */
+  evaluasi: EvaluasiKriteria[];
   
   penjelasan: string;
 }
@@ -141,35 +283,64 @@ export function getMoonHorizontalCoordinates(jd: number, coord: Coordinate): { a
   };
 }
 
-// Peta estimasi tanggal Masehi awal bulan Hijriah untuk tahun 1447 H / 2026 M
-// Format: bulan_hijriah -> perkiraan tanggal masehi saat konjungsi
-const ESTIMASI_IJTIMAK_1447: Record<string, string> = {
-  "Ramadan": "2026-02-17",
-  "Syawal": "2026-03-18",
-  "Zulhijjah": "2026-05-16",
-  "Muharram": "2026-06-15",
-  "Safar": "2026-07-14"
-};
+/** Panjang rata-rata satu bulan sinodis (Meeus, Astronomical Algorithms Bab 49), hari. */
+const LUNASI_RATA_RATA = 29.530588861;
+/** JD mean new moon k = 0 (6 Januari 2000 18:14 TD) — Meeus rumus 49.1 */
+const JD_NEW_MOON_K0 = 2451550.09766;
+/** JD 1 Muharram 1 H menurut epoch Hijriah tabular (16 Juli 622 M) */
+const JD_EPOCH_HIJRIAH = 1948439.5;
 
 /**
- * Mengevaluasi kriteria awal bulan Hijriah berdasarkan Wujudul Hilal & KHGT.
+ * Memperkirakan Julian Date ijtimak (konjungsi) untuk sebuah bulan Hijriah.
+ *
+ * Alur: perkiraan kasar dari epoch Hijriah tabular → dibulatkan ke nomor lunasi (k)
+ * terdekat memakai rumus mean new moon Meeus → dipakai sebagai titik awal bisection
+ * `cariWaktuIjtimakJd` yang mencari konjungsi sesungguhnya.
+ *
+ * Ini menggantikan tabel tanggal hardcoded yang dulu hanya berisi 5 bulan di 1447 H.
+ */
+export function perkiraanJdIjtimak(hijriMonthIndex: number, hijriYear: number): number {
+  if (hijriMonthIndex < 0 || hijriMonthIndex > 11) {
+    throw new HisabError('INVALID_INPUT', `Indeks bulan Hijriah tidak valid: ${hijriMonthIndex}`);
+  }
+  if (!Number.isFinite(hijriYear) || hijriYear < 1) {
+    throw new HisabError('INVALID_INPUT', `Tahun Hijriah tidak valid: ${hijriYear}`);
+  }
+
+  const bulanSejakEpoch = (hijriYear - 1) * 12 + hijriMonthIndex;
+  const jdKasar = JD_EPOCH_HIJRIAH + bulanSejakEpoch * LUNASI_RATA_RATA;
+  const k = Math.round((jdKasar - JD_NEW_MOON_K0) / LUNASI_RATA_RATA);
+  return JD_NEW_MOON_K0 + k * LUNASI_RATA_RATA;
+}
+
+/**
+ * Mengevaluasi kriteria awal bulan Hijriah — SEMUA kriteria dihitung berdampingan.
+ *
+ * @param hijriMonthName Nama bulan Hijriah (lihat `NAMA_BULAN_HIJRIAH`)
+ * @param hijriYear Tahun Hijriah
+ * @param localCoord Markaz pengamat untuk kriteria berjenis `lokal`
+ * @param timezoneOffset Offset zona waktu markaz (WITA = 8)
+ * @param elevation Ketinggian markaz (mdpl), mempengaruhi waktu Magrib
  */
 export function hitungKriteriaBulan(
   hijriMonthName: string,
   hijriYear: number,
   localCoord: Coordinate,
-  timezoneOffset: number
+  timezoneOffset: number,
+  elevation: number = 0
 ): HijriKriteriaResult {
-  const key = `${hijriMonthName}`;
-  const dateBaseStr = ESTIMASI_IJTIMAK_1447[key];
-  if (!dateBaseStr) {
-    throw new Error(`Data perkiraan bulan Hijriah "${hijriMonthName}" tidak tersedia.`);
+  const monthIndex = NAMA_BULAN_HIJRIAH.findIndex(
+    (n) => n.toLowerCase() === hijriMonthName.trim().toLowerCase()
+  );
+  if (monthIndex < 0) {
+    throw new HisabError(
+      'INVALID_INPUT',
+      `Nama bulan Hijriah "${hijriMonthName}" tidak dikenal. Pilihan: ${NAMA_BULAN_HIJRIAH.join(', ')}.`
+    );
   }
 
-  // 1. Cari tanggal perkiraan konjungsi
-  const baseDate = new Date(`${dateBaseStr}T12:00:00Z`);
-  const jdBase = getJulianDate(baseDate);
-  const jdConjunction = cariWaktuIjtimakJd(jdBase);
+  // 1. Cari waktu ijtimak sesungguhnya di sekitar perkiraan lunasi
+  const jdConjunction = cariWaktuIjtimakJd(perkiraanJdIjtimak(monthIndex, hijriYear));
 
   // Ubah JD konjungsi ke Date UTC
   const conjunctionDateUtc = new Date((jdConjunction - 2440587.5) * 86400 * 1000);
@@ -182,58 +353,104 @@ export function hitungKriteriaBulan(
   const testDate = new Date(conjunctionDateUtc);
   const dateMasehi = `${testDate.getUTCFullYear()}-${pad(testDate.getUTCMonth() + 1)}-${pad(testDate.getUTCDate())}`;
 
-  // 2. Hitung waktu Magrib lokal pada tanggal tersebut
-  // Menggunakan aproksimasi standard Magrib pada pukul 18:00 waktu lokal disesuaikan dengan bujur (± 30 menit)
-  // Untuk Makassar, Magrib berkisar 18:05 WITA (atau 10:05 UTC)
-  const magribLokalJam = 18.1; // 18:06 waktu lokal
-  const magribUtcDate = new Date(`${dateMasehi}T12:00:00Z`); // Buat UTC base
-  // Kurangi timezone untuk mendapat waktu magrib dalam UTC
-  magribUtcDate.setUTCHours(18 - timezoneOffset + 0.1, 6, 0, 0); 
-  const jdMagrib = getJulianDate(magribUtcDate);
+  // 2. Waktu Magrib lokal — dihitung lewat hisab-core, bukan diasumsikan 18:06.
+  //    Ikhtiyat sengaja 0 karena yang diuji adalah saat terbenam astronomis, bukan
+  //    jadwal salat yang sudah diberi margin kehati-hatian.
+  const tanggalLokal = new Date(
+    testDate.getUTCFullYear(), testDate.getUTCMonth(), testDate.getUTCDate()
+  );
+  const jadwal = hitungJadwalSalat(
+    localCoord, tanggalLokal, timezoneOffset, elevation, 'Muhammadiyah', 0
+  );
+  const [magribJam, magribMenit] = jadwal.magrib.split(':').map(Number);
+  const magribLokalDesimal = magribJam + magribMenit / 60;
 
-  // 3. Evaluasi Kriteria Wujudul Hilal
-  // A. Ijtimak terjadi sebelum matahari terbenam (Magrib)
+  // Magrib lokal → UTC → Julian Date
+  const magribUtcMs = Date.UTC(
+    testDate.getUTCFullYear(), testDate.getUTCMonth(), testDate.getUTCDate()
+  ) + (magribLokalDesimal - timezoneOffset) * 3600 * 1000;
+  const jdMagrib = getJulianDate(new Date(magribUtcMs));
+
+  // 3. Parameter hilal lokal saat Magrib
   const ijtimakTerjadiSebelumMagrib = jdConjunction < jdMagrib;
-
-  // B. Tinggi Hilal lokal saat terbenam
   const { altitude: lokalTinggiHilal } = getMoonHorizontalCoordinates(jdMagrib, localCoord);
   const lokalElongasi = getElongation(jdMagrib);
+  const umurBulanJam = (jdMagrib - jdConjunction) * 24;
 
-  const wujudulHilalTerpenuhi = ijtimakTerjadiSebelumMagrib && lokalTinggiHilal > 0;
-
-  // 4. Evaluasi Kriteria KHGT (Global Tunggal)
-  // Istanbul 2016/KHGT: Elongasi geosentris >= 8° dan tinggi hilal geosentris >= 5° saat terbenamnya matahari sebelum 24:00 GMT di titik manapun
-  // Pada praktiknya, untuk pengujian program kita mengevaluasi posisi hilal geosentris (pada koordinat 0,0 atau titik optimum terbenam di barat) pada pukul 24:00 UTC.
-  // Untuk menyederhanakan perhitungan geosentris murni secara global tanpa database visualisasi 3D bumi penuh:
-  // Kita evaluasi parameter geosentris Bulan-Matahari pada batas 24:00 UTC hari konjungsi.
+  // 4. Parameter geosentris global untuk kriteria matlak global (KHGT)
+  // Dievaluasi pada batas 24:00 UTC hari konjungsi, pada titik optimum di belahan
+  // bumi barat tempat hilal paling tinggi saat Magrib sebelum pukul 24:00 GMT.
   const jdKhgtLimit = getJulianDate(new Date(`${dateMasehi}T23:59:59Z`));
   const khgtElongasiGeosentris = getElongation(jdKhgtLimit);
-  
-  // Tinggi Hilal geosentris diambil rata-rata dari koordinat optimum di samudera pasifik/amerika barat
-  // di mana hilal paling tinggi saat Magrib sebelum 24:00 UTC.
-  // Kita simulasikan koordinat optimum barat (misal lat = 20, lng = -100)
   const coordOptimum: Coordinate = { lat: 20, lng: -100 };
   const { altitude: khgtTinggiHilalGeosentris } = getMoonHorizontalCoordinates(jdKhgtLimit, coordOptimum);
+  const umurBulanGlobalJam = (jdKhgtLimit - jdConjunction) * 24;
 
-  const khgtTerpenuhi = khgtElongasiGeosentris >= 8.0 && khgtTinggiHilalGeosentris >= 5.0;
+  // 5. Evaluasi seluruh kriteria dengan ambang dari PARAMETER_KRITERIA_HIJRIAH
+  const evaluasi: EvaluasiKriteria[] = URUTAN_KRITERIA_HIJRIAH.map((kriteria) => {
+    const parameter = PARAMETER_KRITERIA_HIJRIAH[kriteria];
+    const global = parameter.jenis === 'global';
 
-  // Penjelasan analisis
-  let penjelasan = '';
-  if (wujudulHilalTerpenuhi && khgtTerpenuhi) {
-    penjelasan = `Awal bulan ${hijriMonthName} ${hijriYear} H dinyatakan MULAI pada hari berikutnya karena kedua kriteria (Wujudul Hilal & KHGT) telah terpenuhi.`;
-  } else if (!wujudulHilalTerpenuhi && khgtTerpenuhi) {
-    penjelasan = `Terjadi PERBEDAAN MULAI bulan ${hijriMonthName} ${hijriYear} H. Berdasarkan KHGT, awal bulan sudah masuk karena elongasi global & tinggi hilal di belahan bumi barat memenuhi syarat (elongasi ${khgtElongasiGeosentris.toFixed(2)}° >= 8° & tinggi ${khgtTinggiHilalGeosentris.toFixed(2)}° >= 5°). Namun, berdasarkan Wujudul Hilal lokal, awal bulan belum masuk karena hilal lokal masih berada di bawah ufuk (${lokalTinggiHilal.toFixed(2)}°).`;
+    const tinggiHilal = global ? khgtTinggiHilalGeosentris : lokalTinggiHilal;
+    const elongasi = global ? khgtElongasiGeosentris : lokalElongasi;
+    const umur = global ? umurBulanGlobalJam : umurBulanJam;
+    const ijtimakOk = global ? jdConjunction < jdKhgtLimit : ijtimakTerjadiSebelumMagrib;
+
+    const syarat: Array<{ nama: string; lolos: boolean }> = [];
+    if (parameter.syaratIjtimakSebelumMagrib) {
+      syarat.push({ nama: 'ijtimak sebelum Magrib', lolos: ijtimakOk });
+    }
+    // Wujudul Hilal: hilal cukup berada di atas ufuk (> 0°), bukan ≥ 0°.
+    const lolosTinggi =
+      parameter.minTinggiHilal === 0 ? tinggiHilal > 0 : tinggiHilal >= parameter.minTinggiHilal;
+    syarat.push({
+      nama: `tinggi hilal ${parameter.minTinggiHilal === 0 ? '> 0°' : `≥ ${parameter.minTinggiHilal}°`} (${tinggiHilal.toFixed(2)}°)`,
+      lolos: lolosTinggi,
+    });
+    if (parameter.minElongasi > 0) {
+      syarat.push({
+        nama: `elongasi ≥ ${parameter.minElongasi}° (${elongasi.toFixed(2)}°)`,
+        lolos: elongasi >= parameter.minElongasi,
+      });
+    }
+    if (parameter.minUmurBulanJam > 0) {
+      syarat.push({
+        nama: `umur bulan ≥ ${parameter.minUmurBulanJam} jam (${umur.toFixed(2)} jam)`,
+        lolos: umur >= parameter.minUmurBulanJam,
+      });
+    }
+
+    const terpenuhi = syarat.every((s) => s.lolos);
+    const alasan = syarat
+      .map((s) => `${s.lolos ? '✓' : '✗'} ${s.nama}`)
+      .join('; ');
+
+    return { kriteria, parameter, tinggiHilal, elongasi, umurBulanJam: umur, ijtimakSebelumMagrib: ijtimakOk, terpenuhi, alasan };
+  });
+
+  const wujudulHilalTerpenuhi = evaluasi.find((e) => e.kriteria === 'WujudulHilal')!.terpenuhi;
+  const khgtTerpenuhi = evaluasi.find((e) => e.kriteria === 'KHGT')!.terpenuhi;
+
+  // 6. Penjelasan — menyebut jumlah kriteria yang terpenuhi, tidak memihak satu kriteria
+  const terpenuhiList = evaluasi.filter((e) => e.terpenuhi).map((e) => e.parameter.label);
+  const belumList = evaluasi.filter((e) => !e.terpenuhi).map((e) => e.parameter.label);
+
+  let penjelasan: string;
+  if (belumList.length === 0) {
+    penjelasan = `Seluruh kriteria (${terpenuhiList.join(', ')}) sepakat bahwa awal bulan ${hijriMonthName} ${hijriYear} H dimulai pada hari berikutnya setelah Magrib ${dateMasehi}.`;
+  } else if (terpenuhiList.length === 0) {
+    penjelasan = `Tidak ada kriteria yang terpenuhi pada Magrib ${dateMasehi} (tinggi hilal lokal ${lokalTinggiHilal.toFixed(2)}°, elongasi ${lokalElongasi.toFixed(2)}°). Bulan berjalan digenapkan (istikmal) menjadi 30 hari menurut seluruh kriteria yang dibandingkan.`;
   } else {
-    penjelasan = `Awal bulan ${hijriMonthName} ${hijriYear} H belum dimulai karena kriteria elongasi dan tinggi hilal minimum belum terpenuhi baik secara lokal maupun global. Bulan digenapkan (istikmal) menjadi 30 hari.`;
+    penjelasan = `Terjadi PERBEDAAN penetapan awal ${hijriMonthName} ${hijriYear} H. Terpenuhi menurut: ${terpenuhiList.join(', ')}. Belum terpenuhi menurut: ${belumList.join(', ')}. Perbedaan ini wajar karena tiap kriteria memakai ambang tinggi hilal/elongasi dan lingkup matlak (lokal vs global) yang berbeda — SIFA menampilkan keduanya apa adanya, bukan memilih salah satu.`;
   }
 
   return {
-    hijriMonthName,
+    hijriMonthName: NAMA_BULAN_HIJRIAH[monthIndex],
     hijriYear,
     dateMasehi,
     waktuIjtimakUtc,
     ijtimakTerjadiSebelumMagrib,
-    lokalMagribMasehi: "18:06",
+    lokalMagribMasehi: jadwal.magrib,
     lokalTinggiHilal,
     lokalTinggiHilalDms: toDMS(lokalTinggiHilal),
     lokalElongasi,
@@ -242,6 +459,8 @@ export function hitungKriteriaBulan(
     khgtElongasiGeosentris,
     khgtTinggiHilalGeosentris,
     khgtTerpenuhi,
-    penjelasan
+    umurBulanJam,
+    evaluasi,
+    penjelasan,
   };
 }

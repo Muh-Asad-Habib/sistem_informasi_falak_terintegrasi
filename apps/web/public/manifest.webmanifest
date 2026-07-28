@@ -1,0 +1,27 @@
+{
+  "name": "SIFA — Sistem Informasi Falak Terintegrasi",
+  "short_name": "SIFA",
+  "description": "Arah kiblat, jadwal salat, dan kalender Hijriah dengan hisab yang transparan. Fitur inti tetap jalan tanpa internet.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8f6f0",
+  "theme_color": "#0d3b2e",
+  "lang": "id",
+  "categories": ["education", "lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Arah Kiblat", "url": "/kiblat" },
+    { "name": "Jadwal Salat", "url": "/waktu-salat" },
+    { "name": "Kalender Hijriah", "url": "/kalender" }
+  ]
+}
+

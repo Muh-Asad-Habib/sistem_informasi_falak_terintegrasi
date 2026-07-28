@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SIFA">
+  <rect width="512" height="512" rx="96" fill="#0d3b2e"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#e3a72b" stroke-width="10" opacity="0.55"/>
+  <circle cx="256" cy="256" r="110" fill="none" stroke="#e3a72b" stroke-width="4" opacity="0.35"/>
+  <!-- jarum kiblat -->
+  <path d="M256 126 L286 286 L256 266 L226 286 Z" fill="#e3a72b"/>
+  <circle cx="256" cy="276" r="16" fill="#0d3b2e" stroke="#e3a72b" stroke-width="8"/>
+  <!-- huruf U (Utara) -->
+  <text x="256" y="104" font-family="Georgia, serif" font-size="52" font-weight="bold" fill="#f5f1e6" text-anchor="middle">U</text>
+  <text x="256" y="440" font-family="Georgia, serif" font-size="64" font-weight="bold" fill="#f5f1e6" text-anchor="middle" letter-spacing="6">SIFA</text>
+</svg>
+

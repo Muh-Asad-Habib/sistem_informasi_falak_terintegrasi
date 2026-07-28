@@ -1,5 +1,6 @@
+export type HisabErrorCode = 'INVALID_COORDINATES' | 'EPHEMERIS_UNAVAILABLE' | 'INVALID_METHOD' | 'INVALID_INPUT';
 export declare class HisabError extends Error {
-    code: 'INVALID_COORDINATES' | 'EPHEMERIS_UNAVAILABLE';
-    constructor(code: 'INVALID_COORDINATES' | 'EPHEMERIS_UNAVAILABLE', message: string);
+    code: HisabErrorCode;
+    constructor(code: HisabErrorCode, message: string);
 }
 //# sourceMappingURL=errors.d.ts.map

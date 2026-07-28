@@ -24,7 +24,8 @@ sifa/
 | Auth | OAuth pihak ketiga (mis. Google) — hanya untuk Takmir/Admin | Jamaah umum TIDAK perlu login |
 | Astronomi (waktu salat) | `adhan` (npm, github.com/batoulapps/Adhan) | Lihat `docs/research-SIFA.md` — preset default `adhan` HARUS dikustomisasi ke nilai ketinggian matahari dari modul, jangan pakai preset ISNA/MWL apa adanya |
 | Astronomi (kiblat, ijtimak/hilal) | Implementasi khusus di `hisab-core` | `adhan` tidak menyediakan fungsi ini secara bawaan |
-| Peta | MapLibre + OpenStreetMap | Hindari Google Maps berbayar; wajib atribusi "© OpenStreetMap contributors" |
+| Peta | MapLibre + OpenStreetMap | **Terpasang sejak 28 Jul 2026** (`maplibre-gl` di `apps/web`). Hindari Google Maps berbayar; wajib atribusi "© OpenStreetMap contributors". Komponen: `components/features/PetaMasjidTerdekat.tsx`, dimuat `next/dynamic` `ssr:false` |
+| Data masjid sekitar | Overpass API (OSM) lewat `apps/web/src/lib/osm.ts` | Query & cache TIDAK boleh diduplikasi di komponen; cache `sessionStorage` 5 menit + fallback cache basi saat offline |
 | Hosting | Vercel (tingkatan gratis) | Cukup untuk skala MVP |
 | Database hosting | Supabase/Neon (tingkatan gratis) | Verifikasi harga terbaru sebelum commit — tingkatan gratis bisa berubah |
 | Monitoring | Sentry (tingkatan gratis) | — |

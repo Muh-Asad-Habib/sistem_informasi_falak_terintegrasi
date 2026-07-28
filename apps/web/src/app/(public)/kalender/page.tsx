@@ -3,14 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { hitungKriteriaBulan, HijriKriteriaResult } from 'hisab-core';
+import { hitungKriteriaBulan, HijriKriteriaResult, NAMA_BULAN_HIJRIAH } from 'hisab-core';
 
-// Nama bulan Hijriah
-const BULAN_HIJRIAH = [
-  "Muharram", "Safar", "Rabi'ul Awal", "Rabi'ul Akhir",
-  "Jumadil Awal", "Jumadil Akhir", "Rajab", "Sya'ban",
-  "Ramadan", "Syawal", "Zulkaidah", "Zulhijjah"
-];
+// Nama bulan Hijriah — satu sumber dari hisab-core agar tidak berbeda antar-halaman
+const BULAN_HIJRIAH = [...NAMA_BULAN_HIJRIAH];
 
 // Nama hari
 const NAMA_HARI = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -75,7 +71,9 @@ export default function KalenderPage() {
   
   // Parameter Kriteria Awal Bulan (default: Unismuh Makassar)
   const [targetBulan, setTargetBulan] = useState<string>('Ramadan');
+  const [targetTahun, setTargetTahun] = useState<number>(1447);
   const [kriteriaResult, setKriteriaResult] = useState<HijriKriteriaResult | null>(null);
+  const [kriteriaError, setKriteriaError] = useState<string | null>(null);
 
   useEffect(() => {
     setViewMonth(new Date());
@@ -84,13 +82,16 @@ export default function KalenderPage() {
   // Update kriteria awal bulan saat parameter diganti
   useEffect(() => {
     try {
+      setKriteriaError(null);
       const coord = { lat: -5.182089, lng: 119.441200 }; // Unismuh Makassar
-      const res = hitungKriteriaBulan(targetBulan, 1447, coord, 8);
+      const res = hitungKriteriaBulan(targetBulan, targetTahun, coord, 8, 5);
       setKriteriaResult(res);
     } catch (e) {
       console.error(e);
+      setKriteriaResult(null);
+      setKriteriaError(e instanceof Error ? e.message : 'Gagal menghitung kriteria awal bulan.');
     }
-  }, [targetBulan]);
+  }, [targetBulan, targetTahun]);
 
   const goToPrevMonth = () => setViewMonth(prev => prev ? new Date(prev.getFullYear(), prev.getMonth() - 1, 1) : null);
   const goToNextMonth = () => setViewMonth(prev => prev ? new Date(prev.getFullYear(), prev.getMonth() + 1, 1) : null);
@@ -180,14 +181,15 @@ export default function KalenderPage() {
           Kalender Masehi-Hijriah
         </h1>
         <p className="text-sm text-foreground/60">
-          Sistem kalender integrasi Masehi dengan Hijriah serta status hisab penentuan awal bulan penting (Ramadan, Syawal, Zulhijjah).
+          Sistem kalender integrasi Masehi dengan Hijriah serta perbandingan kriteria penetapan awal bulan
+          (Wujudul Hilal, KHGT, MABIMS, Istanbul) untuk seluruh bulan Hijriah.
         </p>
       </div>
 
       {/* Educational Banner */}
       <div className="rounded-2xl bg-gradient-to-br from-sifa-green-50 to-sifa-gold-50 border border-sifa-gold-500/30 p-5 flex flex-col gap-3 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/20">
         <p className="text-sm text-sifa-green-950 dark:text-sifa-green-100 leading-relaxed font-medium">
-          Kalender ini mengintegrasikan dua sistem penanggalan: Masehi (Gregorian) berdasarkan peredaran Bumi mengelilingi Matahari, dan Hijriah berdasarkan peredaran Bulan mengelilingi Bumi. Untuk penentuan bulan-bulan ibadah penting (Ramadan, Idulfitri, Iduladha), tersedia tab Kriteria Awal Bulan yang menghitung posisi hilal berdasarkan dua kriteria Muhammadiyah: Wujudul Hilal dan KHGT.
+          Kalender ini mengintegrasikan dua sistem penanggalan: Masehi (Gregorian) berdasarkan peredaran Bumi mengelilingi Matahari, dan Hijriah berdasarkan peredaran Bulan mengelilingi Bumi. Pada tab <strong>Kriteria Awal Bulan</strong>, posisi hilal hasil hisab diuji terhadap beberapa kriteria sekaligus — Wujudul Hilal &amp; KHGT (Muhammadiyah), MABIMS baru &amp; lama (dipakai Kemenag RI), serta Istanbul 2016 — sehingga terlihat jelas mengapa penetapan awal bulan bisa berbeda antar-lembaga.
         </p>
       </div>
 
@@ -207,7 +209,7 @@ export default function KalenderPage() {
             activeTab === 'kriteria' ? 'border-sifa-green-900 text-sifa-green-900 dark:border-sifa-green-500 dark:text-sifa-green-500' : 'border-transparent text-foreground/60'
           }`}
         >
-          Kriteria Awal Bulan (Wujudul Hilal vs KHGT)
+          Kriteria Awal Bulan (Perbandingan Lintas Kriteria)
         </button>
       </div>
 
@@ -278,124 +280,176 @@ export default function KalenderPage() {
         </div>
       )}
 
-      {/* Tab 2: Kriteria Awal Bulan (Wujudul Hilal vs KHGT) */}
+      {/* Tab 2: Kriteria Awal Bulan (perbandingan semua kriteria) */}
       {activeTab === 'kriteria' && (
         <div className="flex flex-col gap-6">
           {/* Selection Control */}
-          <Card className="flex flex-col md:flex-row items-center justify-between gap-4 p-5">
-            <div className="flex flex-col gap-1 w-full md:w-auto">
-              <span className="text-xs font-bold text-foreground/50 uppercase tracking-wide">Pilih Awal Bulan Syar&apos;i (1447 H / 2026 M)</span>
-              <div className="flex gap-2 mt-1">
-                {['Ramadan', 'Syawal', 'Zulhijjah'].map((b) => (
-                  <button
-                    key={b}
-                    onClick={() => setTargetBulan(b)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold border transition-colors ${
-                      targetBulan === b
-                        ? 'bg-sifa-green-900 text-white border-sifa-green-950 dark:bg-sifa-green-700'
-                        : 'border-card-border bg-foreground/5 text-foreground hover:bg-foreground/10'
-                    }`}
-                  >
-                    1 {b} 1447 H
-                  </button>
-                ))}
+          <Card className="flex flex-col gap-4 p-5">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div className="flex flex-col gap-1 flex-1">
+                <label htmlFor="kal-bulan" className="text-xs font-bold text-foreground/50 uppercase tracking-wide">
+                  Bulan Hijriah yang Diuji
+                </label>
+                <select
+                  id="kal-bulan"
+                  value={targetBulan}
+                  onChange={(e) => setTargetBulan(e.target.value)}
+                  className="px-3 py-2.5 rounded-xl border border-card-border bg-background text-xs font-semibold focus:outline-none"
+                >
+                  {BULAN_HIJRIAH.map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1 w-full sm:w-36">
+                <label htmlFor="kal-tahun" className="text-xs font-bold text-foreground/50 uppercase tracking-wide">
+                  Tahun Hijriah
+                </label>
+                <input
+                  id="kal-tahun"
+                  type="number"
+                  min={1400}
+                  max={1500}
+                  value={targetTahun}
+                  onChange={(e) => setTargetTahun(Number(e.target.value))}
+                  className="px-3 py-2.5 rounded-xl border border-card-border bg-background text-xs font-semibold focus:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col sm:text-right sm:items-end">
+                <span className="text-[10px] font-bold text-foreground/40 uppercase">Markaz Pengamatan Lokal</span>
+                <span className="font-semibold text-xs text-foreground/80">Unismuh Makassar (WITA, GMT+8, 5 mdpl)</span>
               </div>
             </div>
 
-            <div className="flex flex-col text-right items-end w-full md:w-auto">
-              <span className="text-[10px] font-bold text-foreground/40 uppercase">Markaz Pengamatan Lokal</span>
-              <span className="font-semibold text-xs text-foreground/80">Unismuh Makassar (WITA, GMT+8)</span>
+            {/* Pintasan bulan ibadah utama */}
+            <div className="flex flex-wrap gap-2 border-t border-card-border/50 pt-3">
+              <span className="text-[10px] font-bold text-foreground/40 self-center">Pintasan:</span>
+              {['Ramadan', 'Syawal', 'Zulhijjah', 'Muharram'].map((b) => (
+                <button
+                  key={b}
+                  onClick={() => setTargetBulan(b)}
+                  className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${
+                    targetBulan === b
+                      ? 'bg-sifa-green-900 text-white border-sifa-green-950 dark:bg-sifa-green-700'
+                      : 'border-card-border bg-foreground/5 text-foreground hover:bg-foreground/10'
+                  }`}
+                >
+                  1 {b}
+                </button>
+              ))}
             </div>
           </Card>
 
-          {/* Results Side-by-Side */}
+          {kriteriaError && (
+            <Card className="p-5 border border-red-200 dark:border-red-900/30 bg-red-50 dark:bg-red-950/20">
+              <p className="text-xs font-semibold text-red-700 dark:text-red-400">{kriteriaError}</p>
+            </Card>
+          )}
+
+          {/* Data hisab bersama untuk seluruh kriteria */}
           {kriteriaResult && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* Kriteria Wujudul Hilal */}
-              <Card variant={kriteriaResult.wujudulHilalTerpenuhi ? 'green' : 'default'} className="flex flex-col gap-4">
-                <div className="flex justify-between items-center border-b border-card-border pb-3">
-                  <h3 className="font-heading text-lg font-extrabold text-sifa-green-900 dark:text-sifa-green-100">
-                    Wujudul Hilal (Muhammadiyah)
-                  </h3>
-                  <Badge variant={kriteriaResult.wujudulHilalTerpenuhi ? 'green' : 'default'} className="uppercase">
-                    {kriteriaResult.wujudulHilalTerpenuhi ? 'Terpenuhi' : 'Belum Terpenuhi'}
-                  </Badge>
-                </div>
+            <Card className="flex flex-col gap-3 p-5">
+              <h3 className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 text-sm">
+                Data Hisab — kandidat awal {kriteriaResult.hijriMonthName} {kriteriaResult.hijriYear} H
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                {[
+                  { l: 'Ijtimak (UTC)', v: kriteriaResult.waktuIjtimakUtc },
+                  { l: 'Magrib diuji', v: `${kriteriaResult.dateMasehi} · ${kriteriaResult.lokalMagribMasehi} WITA` },
+                  { l: 'Tinggi hilal lokal', v: `${kriteriaResult.lokalTinggiHilalDms} (${kriteriaResult.lokalTinggiHilal.toFixed(2)}°)` },
+                  { l: 'Elongasi lokal', v: `${kriteriaResult.lokalElongasiDms} (${kriteriaResult.lokalElongasi.toFixed(2)}°)` },
+                  { l: 'Umur bulan', v: `${kriteriaResult.umurBulanJam.toFixed(2)} jam` },
+                  { l: 'Elongasi geosentris (global)', v: `${kriteriaResult.khgtElongasiGeosentris.toFixed(2)}°` },
+                  { l: 'Tinggi hilal geosentris (global)', v: `${kriteriaResult.khgtTinggiHilalGeosentris.toFixed(2)}°` },
+                  { l: 'Ijtimak sebelum Magrib', v: kriteriaResult.ijtimakTerjadiSebelumMagrib ? 'Ya' : 'Belum' },
+                ].map((item) => (
+                  <div key={item.l} className="flex flex-col gap-0.5 bg-foreground/[0.03] border border-card-border/40 rounded-lg p-2.5">
+                    <span className="text-[9px] font-bold uppercase tracking-wide text-foreground/45">{item.l}</span>
+                    <span className="font-mono font-bold text-foreground/85 text-[11px] leading-snug">{item.v}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[10px] text-foreground/45 leading-relaxed">
+                Waktu Magrib dihitung oleh <strong>hisab-core</strong> untuk koordinat markaz (ikhtiyat 0,
+                karena yang diuji adalah saat terbenam astronomis) — bukan angka tetap.
+              </p>
+            </Card>
+          )}
 
-                <div className="flex flex-col gap-2.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">Tanggal Uji Magrib:</span>
-                    <span className="font-mono font-bold">{kriteriaResult.dateMasehi}</span>
+          {/* Kartu tiap kriteria — ditampilkan berdampingan, tidak dipilih salah satu */}
+          {kriteriaResult && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {kriteriaResult.evaluasi.map((ev) => (
+                <Card
+                  key={ev.kriteria}
+                  variant={ev.terpenuhi ? (ev.parameter.jenis === 'global' ? 'gold' : 'green') : 'default'}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="flex justify-between items-start gap-3 border-b border-card-border pb-3">
+                    <div className="flex flex-col gap-0.5">
+                      <h3 className="font-heading text-base font-extrabold text-sifa-green-900 dark:text-sifa-green-100 leading-tight">
+                        {ev.parameter.label}
+                      </h3>
+                      <span className="text-[10px] text-foreground/50 font-semibold">{ev.parameter.organisasi}</span>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge variant={ev.terpenuhi ? (ev.parameter.jenis === 'global' ? 'gold' : 'green') : 'default'} className="uppercase text-[9px]">
+                        {ev.terpenuhi ? 'Terpenuhi' : 'Belum Terpenuhi'}
+                      </Badge>
+                      <span className="text-[9px] font-bold uppercase tracking-wide text-foreground/40">
+                        Matlak {ev.parameter.jenis}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">Waktu Konjungsi (Ijtimak):</span>
-                    <span className="font-mono font-bold text-right">{kriteriaResult.waktuIjtimakUtc}</span>
+
+                  <div className="flex flex-col gap-1.5 text-xs">
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/50">Ambang tinggi hilal:</span>
+                      <span className="font-mono font-bold">
+                        {ev.parameter.minTinggiHilal === 0 ? '> 0°' : `≥ ${ev.parameter.minTinggiHilal}°`}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/50">Ambang elongasi:</span>
+                      <span className="font-mono font-bold">
+                        {ev.parameter.minElongasi === 0 ? 'tidak disyaratkan' : `≥ ${ev.parameter.minElongasi}°`}
+                      </span>
+                    </div>
+                    {ev.parameter.minUmurBulanJam > 0 && (
+                      <div className="flex justify-between gap-3">
+                        <span className="text-foreground/50">Ambang umur bulan:</span>
+                        <span className="font-mono font-bold">≥ {ev.parameter.minUmurBulanJam} jam</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between gap-3 border-t border-card-border/40 pt-1.5 mt-1">
+                      <span className="text-foreground/50">Nilai teruji:</span>
+                      <span className="font-mono font-bold text-sifa-green-950 dark:text-sifa-green-100 text-right">
+                        tinggi {ev.tinggiHilal.toFixed(2)}° · elongasi {ev.elongasi.toFixed(2)}°
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">Ijtimak sebelum Magrib:</span>
-                    <span className={`font-bold ${kriteriaResult.ijtimakTerjadiSebelumMagrib ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {kriteriaResult.ijtimakTerjadiSebelumMagrib ? 'Ya (Terjadi)' : 'Belum (Belum terjadi)'}
+
+                  <div className="text-[11px] bg-foreground/[0.03] p-2.5 rounded-lg border border-card-border/40 leading-relaxed font-mono text-foreground/75">
+                    {ev.alasan}
+                  </div>
+
+                  <div className="flex flex-col gap-1 text-[10px] leading-relaxed mt-auto">
+                    <span className="text-foreground/55">
+                      <strong>Sumber:</strong> {ev.parameter.sumber}
                     </span>
+                    {ev.parameter.statusRujukan === 'perlu_konfirmasi' && (
+                      <span className="text-sifa-gold-700 dark:text-sifa-gold-400 font-semibold">
+                        ⚠️ Rujukan belum diverifikasi tim SIFA ke terbitan resmi — tampil sebagai pembanding edukatif.
+                      </span>
+                    )}
+                    {ev.parameter.catatan && (
+                      <span className="text-foreground/50 italic">{ev.parameter.catatan}</span>
+                    )}
                   </div>
-                  <div className="flex justify-between border-t border-card-border/40 pt-2 mt-1">
-                    <span className="text-foreground/50">Tinggi Hilal Lokal (Makassar):</span>
-                    <span className="font-mono font-bold text-sifa-green-950 dark:text-sifa-green-100">{kriteriaResult.lokalTinggiHilalDms} ({kriteriaResult.lokalTinggiHilal.toFixed(2)}°)</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">Kondisi Hilal di Atas Ufuk (&gt; 0°):</span>
-                    <span className={`font-bold ${kriteriaResult.lokalTinggiHilal > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {kriteriaResult.lokalTinggiHilal > 0 ? 'Ya (Wujud)' : 'Tidak (Matahari terbenam duluan)'}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-xs bg-foreground/[0.02] p-3 rounded-lg border border-card-border/40 leading-relaxed italic text-foreground/70">
-                  Kriteria Wujudul Hilal mensyaratkan konjungsi telah terjadi sebelum matahari terbenam dan pada saat terbenam, posisi piringan atas bulan masih berada di atas ufuk.
-                </p>
-              </Card>
-
-              {/* Kriteria KHGT */}
-              <Card variant={kriteriaResult.khgtTerpenuhi ? 'gold' : 'default'} className="flex flex-col gap-4">
-                <div className="flex justify-between items-center border-b border-card-border pb-3">
-                  <h3 className="font-heading text-lg font-extrabold text-sifa-green-900 dark:text-sifa-green-100">
-                    KHGT (Global Tunggal)
-                  </h3>
-                  <Badge variant={kriteriaResult.khgtTerpenuhi ? 'gold' : 'default'} className="uppercase">
-                    {kriteriaResult.khgtTerpenuhi ? 'Terpenuhi' : 'Belum Terpenuhi'}
-                  </Badge>
-                </div>
-
-                <div className="flex flex-col gap-2.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">Tanggal Uji Magrib:</span>
-                    <span className="font-mono font-bold">{kriteriaResult.dateMasehi}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">Kriteria Elongasi (≥ 8°):</span>
-                    <span className="font-mono font-bold text-sifa-gold-600">{kriteriaResult.lokalElongasiDms} ({kriteriaResult.lokalElongasi.toFixed(2)}°)</span>
-                  </div>
-                  <div className="flex justify-between border-t border-card-border/40 pt-2 mt-1">
-                    <span className="text-foreground/50">KHGT Elongasi Geosentris (Global):</span>
-                    <span className="font-mono font-bold">{kriteriaResult.khgtElongasiGeosentris.toFixed(2)}°</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">KHGT Tinggi Hilal (Global):</span>
-                    <span className="font-mono font-bold">{kriteriaResult.khgtTinggiHilalGeosentris.toFixed(2)}°</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-foreground/50">Memenuhi Syarat (Elongasi ≥ 8° &amp; Tinggi ≥ 5°):</span>
-                    <span className={`font-bold ${kriteriaResult.khgtTerpenuhi ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {kriteriaResult.khgtTerpenuhi ? 'Ya (Masuk Kriteria)' : 'Tidak (Kurang)'}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="text-xs bg-foreground/[0.02] p-3 rounded-lg border border-card-border/40 leading-relaxed italic text-foreground/70">
-                  KHGT mengacu pada keputusan Munas Tarjih dengan prinsip kesatuan matlak global: jika parameter (elongasi ≥ 8° &amp; tinggi hilal ≥ 5°) terpenuhi di bagian bumi mana saja sebelum pukul 24:00 GMT, maka awal bulan dimulai seragam di seluruh dunia.
-                </p>
-              </Card>
-
+                </Card>
+              ))}
             </div>
           )}
 
@@ -405,6 +459,11 @@ export default function KalenderPage() {
               <h4 className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 mb-2">Analisis &amp; Keputusan Hisab</h4>
               <p className="text-sm leading-relaxed text-foreground/85">
                 {kriteriaResult.penjelasan}
+              </p>
+              <p className="text-[11px] leading-relaxed text-foreground/55 mt-3 border-t border-card-border/40 pt-3">
+                Bagi warga Muhammadiyah, ketetapan resmi awal bulan tetap berada pada Majelis Tarjih dan
+                Tajdid (kini memakai KHGT sejak 1 Muharram 1447 H). Kriteria lain di halaman ini
+                ditampilkan sebagai bahan pembanding edukatif, bukan sebagai fatwa tandingan.
               </p>
             </Card>
           )}

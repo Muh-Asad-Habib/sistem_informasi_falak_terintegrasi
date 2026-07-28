@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { hitungJadwalSalat, PrayerTimesResult } from 'hisab-core';
 
-import { MASJID_DATA } from '@/data/masjid';
+import { cariMasjid, kiblatMasjid } from '@/data/masjid';
 
 
 export default function LayarMasjidPage() {
@@ -15,21 +16,18 @@ export default function LayarMasjidPage() {
   const [schedule, setSchedule] = useState<PrayerTimesResult | null>(null);
   const [countdown, setCountdown] = useState<{ label: string; text: string } | null>(null);
 
-  // Cari masjid berdasarkan ID
-  const masjid = MASJID_DATA.find((m) => m.id === id) || MASJID_DATA[0];
+  // Cari masjid berdasarkan ID — jangan diam-diam menampilkan masjid lain
+  const masjid = cariMasjid(id);
 
+  // Jam berjalan (1 detik) untuk hitung mundur di layar masjid
   useEffect(() => {
     setTime(new Date());
-    const interval = setInterval(() => {
-      setTime(new Date());
-    }, 1000);
-
+    const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Hitung jadwal salat saat waktu/masjid berubah
   useEffect(() => {
-    if (!time) return;
+    if (!time || !masjid) return;
 
     try {
       const res = hitungJadwalSalat(
@@ -84,6 +82,26 @@ export default function LayarMasjidPage() {
     }
   }, [time, masjid]);
 
+  if (!masjid) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
+        <span className="text-4xl">🕌</span>
+        <h1 className="font-heading text-xl font-bold text-sifa-green-900 dark:text-sifa-green-100">
+          Masjid tidak ditemukan
+        </h1>
+        <p className="text-sm text-foreground/60 max-w-sm">
+          Tidak ada masjid dengan id <code className="font-mono">{id}</code> di direktori SIFA.
+        </p>
+        <Link
+          href="/layar-masjid"
+          className="text-xs font-bold py-2 px-4 rounded-xl bg-sifa-green-900 text-white hover:bg-sifa-green-800 transition-colors"
+        >
+          Kembali ke daftar masjid
+        </Link>
+      </div>
+    );
+  }
+
   if (!time || !schedule) {
     return (
       <div className="flex items-center justify-center h-screen bg-emerald-950 text-white">
@@ -133,7 +151,7 @@ export default function LayarMasjidPage() {
               <span>•</span>
               <span>LNG: {masjid.lng.toFixed(4)}</span>
               <span>•</span>
-              <span>KIBLAT: {masjid.sudut_kiblat_hasil}°</span>
+              <span>KIBLAT: {kiblatMasjid(masjid).azimuthKiblat.decimal.toFixed(2)}° UTSB</span>
             </div>
           </div>
         )}

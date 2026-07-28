@@ -3,7 +3,15 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { hitungArahKiblat, hitungJadwalSalat, Coordinate } from 'hisab-core';
+import PerbandinganMetode from '@/components/features/PerbandinganMetode';
+import { perkiraanTimezone } from '@/lib/lokasi';
+import {
+  hitungArahKiblat,
+  hitungJadwalSalat,
+  Coordinate,
+  PARAMETER_KRITERIA_HIJRIAH,
+  URUTAN_KRITERIA_HIJRIAH,
+} from 'hisab-core';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 interface Article {
@@ -284,6 +292,14 @@ export default function EdukasiPage() {
   const [lngInput, setLngInput] = useState('119.441200');
   const [calcResult, setCalcResult] = useState<{ steps: string[] } | null>(null);
 
+  // Titik uji untuk bagian informasi perbandingan metode
+  const [bandingLat, setBandingLat] = useState('-5.182089');
+  const [bandingLng, setBandingLng] = useState('119.441200');
+  const bandingKoordinat = {
+    lat: parseFloat(bandingLat),
+    lng: parseFloat(bandingLng),
+  };
+
   const filteredArtikel = activeKategori === 'Semua'
     ? ARTIKEL
     : ARTIKEL.filter((a) => a.kategori === activeKategori);
@@ -376,6 +392,141 @@ export default function EdukasiPage() {
           </button>
         ))}
       </div>
+
+      {/* ── Informasi: Perbandingan Metode Hisab ─────────────────────────── */}
+      <section className="flex flex-col gap-5 border-t border-card-border/40 pt-8">
+        <div className="flex flex-col gap-1.5">
+          <h2 className="font-heading text-xl font-bold text-sifa-green-900 dark:text-sifa-green-100">
+            Informasi Falak: Perbandingan Metode Perhitungan
+          </h2>
+          <p className="text-sm text-foreground/60 leading-relaxed max-w-3xl">
+            SIFA memakai kriteria Muhammadiyah sebagai bawaan, tetapi tidak menyembunyikan
+            kriteria lain. Bagian ini menampilkan hasil hisab dari seluruh kriteria yang tersedia
+            secara berdampingan — jadwal salat maupun penetapan awal bulan — lengkap dengan
+            parameter dan sumbernya, agar perbedaan antar-lembaga bisa dipahami, bukan sekadar
+            diperdebatkan.
+          </p>
+        </div>
+
+        {/* Titik uji perbandingan */}
+        <Card className="flex flex-col sm:flex-row gap-3 sm:items-end p-5">
+          <div className="flex flex-col gap-1 flex-1">
+            <label htmlFor="edu-band-lat" className="text-[10px] font-bold text-foreground/60 uppercase tracking-wide">
+              Lintang titik uji
+            </label>
+            <input
+              id="edu-band-lat"
+              type="text"
+              value={bandingLat}
+              onChange={(e) => setBandingLat(e.target.value)}
+              className="px-3 py-2 border border-card-border rounded-xl text-xs bg-background font-mono focus:outline-none focus:border-sifa-green-600"
+            />
+          </div>
+          <div className="flex flex-col gap-1 flex-1">
+            <label htmlFor="edu-band-lng" className="text-[10px] font-bold text-foreground/60 uppercase tracking-wide">
+              Bujur titik uji
+            </label>
+            <input
+              id="edu-band-lng"
+              type="text"
+              value={bandingLng}
+              onChange={(e) => setBandingLng(e.target.value)}
+              className="px-3 py-2 border border-card-border rounded-xl text-xs bg-background font-mono focus:outline-none focus:border-sifa-green-600"
+            />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { label: 'Unismuh', lat: '-5.182089', lng: '119.441200' },
+              { label: 'Jakarta', lat: '-6.2088', lng: '106.8456' },
+              { label: 'Makkah', lat: '21.422511', lng: '39.826203' },
+            ].map((p) => (
+              <button
+                key={p.label}
+                onClick={() => { setBandingLat(p.lat); setBandingLng(p.lng); }}
+                className="text-[10px] px-2.5 py-2 rounded-lg border border-card-border bg-foreground/5 hover:border-sifa-green-600 transition-colors font-semibold text-foreground/70"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        {/* Tabel perbandingan jadwal salat lintas kriteria */}
+        {Number.isFinite(bandingKoordinat.lat) && Number.isFinite(bandingKoordinat.lng) ? (
+          <PerbandinganMetode
+            lat={bandingKoordinat.lat}
+            lng={bandingKoordinat.lng}
+            timezone={perkiraanTimezone(bandingKoordinat.lng)}
+            elevation={0}
+            ikhtiyat={2}
+            metodeAcuan="Muhammadiyah"
+          />
+        ) : (
+          <Card className="p-5">
+            <p className="text-xs text-red-600 font-semibold">Koordinat titik uji harus berupa angka.</p>
+          </Card>
+        )}
+
+        {/* Tabel kriteria awal bulan Hijriah */}
+        <Card className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100">
+              Kriteria Penetapan Awal Bulan Hijriah
+            </h3>
+            <p className="text-xs text-foreground/60 leading-relaxed">
+              Ambang yang benar-benar dipakai mesin hisab SIFA. Untuk melihat kriteria mana yang
+              terpenuhi pada bulan tertentu, buka tab <strong>Kriteria Awal Bulan</strong> di halaman Kalender.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto -mx-2 px-2">
+            <table className="w-full text-xs border-collapse min-w-[620px]">
+              <thead>
+                <tr className="border-b border-card-border bg-foreground/5">
+                  <th scope="col" className="text-left py-2.5 px-3 font-bold uppercase text-foreground/50">Kriteria</th>
+                  <th scope="col" className="text-left py-2.5 px-3 font-bold uppercase text-foreground/50">Matlak</th>
+                  <th scope="col" className="text-left py-2.5 px-3 font-bold uppercase text-foreground/50">Tinggi hilal</th>
+                  <th scope="col" className="text-left py-2.5 px-3 font-bold uppercase text-foreground/50">Elongasi</th>
+                  <th scope="col" className="text-left py-2.5 px-3 font-bold uppercase text-foreground/50">Umur bulan</th>
+                  <th scope="col" className="text-left py-2.5 px-3 font-bold uppercase text-foreground/50">Dipakai oleh</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-card-border/40">
+                {URUTAN_KRITERIA_HIJRIAH.map((k) => {
+                  const p = PARAMETER_KRITERIA_HIJRIAH[k];
+                  return (
+                    <tr key={k} className="hover:bg-foreground/[0.02] align-top">
+                      <th scope="row" className="text-left py-2.5 px-3 font-bold text-sifa-green-900 dark:text-sifa-green-100">
+                        {p.label}
+                        {p.statusRujukan === 'perlu_konfirmasi' && (
+                          <span title="Rujukan belum diverifikasi tim SIFA"> ⚠️</span>
+                        )}
+                      </th>
+                      <td className="py-2.5 px-3 capitalize text-foreground/70">{p.jenis}</td>
+                      <td className="py-2.5 px-3 font-mono text-sifa-gold-600">
+                        {p.minTinggiHilal === 0 ? '> 0°' : `≥ ${p.minTinggiHilal}°`}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-sifa-gold-600">
+                        {p.minElongasi === 0 ? '—' : `≥ ${p.minElongasi}°`}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-foreground/60">
+                        {p.minUmurBulanJam === 0 ? '—' : `≥ ${p.minUmurBulanJam} jam`}
+                      </td>
+                      <td className="py-2.5 px-3 text-foreground/60">{p.organisasi}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-[10px] text-foreground/45 leading-relaxed border-t border-card-border/40 pt-3">
+            ⚠️ = ambang lazim dipakai banyak aplikasi falak, tetapi rujukan cetaknya belum
+            diverifikasi langsung oleh tim SIFA. Ketetapan resmi awal bulan tetap wewenang otoritas
+            masing-masing (Majelis Tarjih dan Tajdid untuk Muhammadiyah, Kemenag RI lewat sidang isbat).
+          </p>
+        </Card>
+      </section>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

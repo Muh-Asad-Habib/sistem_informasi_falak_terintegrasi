@@ -5,6 +5,8 @@
 ## Konteks Proyek
 SIFA adalah sistem informasi falak terpadu (web + mobile) untuk PKM AIK berbasis Ilmu Falak, CPMK 8, Modul AIK IV Fakultas Teknik, Informatika Unismuh Makassar. Empat modul inti: Arah Kiblat, Waktu Salat, Kalender Hijriah (dua kriteria Muhammadiyah: Wujudul Hilal & KHGT), dan Edukasi Falak + Direktori Masjid AUM.
 
+**Catatan sejak 28 Jul 2026:** kriteria Muhammadiyah tetap menjadi **bawaan**, tetapi SIFA juga menyediakan kriteria pembanding — 10 preset waktu salat (Kemenag/MABIMS, NU, MWL, ISNA, Umm al-Qura, Egypt, Karachi, MUIS) dan 5 kriteria awal bulan (+ MABIMS baru/lama, Istanbul 2016), serta pilihan mazhab awal Asar. Aturannya: **tampilkan berdampingan, jangan pernah memilihkan diam-diam**, dan setiap preset wajib punya `sumber` + `statusRujukan`. Detail di `specs/001-multi-metode-dan-peta-spec.md`.
+
 **Level pengguna:** B — Developer (mahasiswa Informatika dengan pengalaman pemrograman; fokus ke arsitektur, pola, dan praktik terbaik, bukan penjelasan dasar pemrograman).
 
 **Dokumen sumber (baca sebelum mulai coding):**
@@ -25,11 +27,12 @@ SIFA adalah sistem informasi falak terpadu (web + mobile) untuk PKM AIK berbasis
 
 | Fase | Status | Fokus |
 |---|---|---|
-| Fase 0 — Riset lapangan | ✅ Selesai | Observasi & wawancara 3–5 masjid AUM, kumpulkan koordinat |
+| Fase 0 — Riset lapangan | 🔄 Sedang berjalan | Observasi & wawancara 3–5 masjid AUM, kumpulkan koordinat. **Belum ada data lapangan sahih** — data karangan sudah dihapus (28 Jul 2026), entri masjid berstatus `belum_terverifikasi` |
 | Fase 1 — MVP (`hisab-core` + web/mobile dasar) | ✅ Selesai | Lihat `docs/PRD-SIFA-MVP.md`, Feature 1 & 2 |
 | Fase 2 — Kalender & Edukasi | ✅ Selesai | Feature 3 & sebagian Feature 4 |
 | Fase 3 — Layanan AUM | ✅ Selesai | Direktori masjid, mode Takmir, mode Layar Masjid |
-| Fase 4 — Uji coba & sosialisasi | ✅ Selesai | Lihat `docs/PRD-SIFA-MVP.md`, Success Metrics |
+| Fase 4 — Uji coba & sosialisasi | ⬜ Belum mulai | Menunggu Fase 0 & uji perangkat nyata; lihat `docs/PRD-SIFA-MVP.md`, Success Metrics |
+| Fase 5 — Audit & hardening | 🔄 Sedang berjalan | Integritas hisab, offline-first, aksesibilitas. Temuan & perbaikan tercatat di `MEMORY.md` |
 
 > Perbarui kolom Status (⬜ Belum mulai / 🔄 Sedang berjalan / ✅ Selesai) setiap kali sebuah fase dimulai/selesai. Ini adalah *satu-satunya* sumber status proyek yang harus dipercaya — jangan simpulkan status dari isi kode saja.
 
