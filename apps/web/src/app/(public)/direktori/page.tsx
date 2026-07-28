@@ -47,7 +47,10 @@ export default function DirektoriPage() {
   /** true bila data yang tampil berasal dari cache kedaluwarsa (Overpass sedang tidak bisa dihubungi). */
   const [dataBasi, setDataBasi] = useState(false);
 
-  const [radius, setRadius] = useState(5);
+  // Default 3 km: kueri Overpass jauh lebih ringan daripada 5 km (uji Makassar:
+  // 181 vs 394 elemen) sehingga halaman terbuka lebih cepat; pengguna tetap bisa
+  // memperluas radius lewat tombol di atas daftar.
+  const [radius, setRadius] = useState(3);
   const [searchTerm, setSearchTerm] = useState('');
 
   // Metode hisab untuk jadwal salat tiap masjid

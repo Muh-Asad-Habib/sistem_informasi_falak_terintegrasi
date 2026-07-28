@@ -277,18 +277,6 @@ export default function AppNav() {
               )}
             </div>
           </nav>
-
-          {/* Tombol menu mobile */}
-          <button
-            type="button"
-            onClick={() => setSheetTerbuka(true)}
-            aria-label="Buka menu lainnya"
-            aria-expanded={sheetTerbuka}
-            className="md:hidden flex items-center gap-1.5 rounded-full border border-card-border bg-card-bg px-3 py-2 text-xs font-bold text-sifa-green-900 active:scale-95 transition-transform"
-          >
-            <IconLainnya className="h-4 w-4" />
-            Menu
-          </button>
         </div>
       </header>
 

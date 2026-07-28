@@ -40,9 +40,38 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 /** TTL cache cadangan di localStorage — dipakai saat semua endpoint gagal/offline. */
 const CACHE_BASI_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 /** Batas waktu satu percobaan request (Overpass sering menggantung saat ramai). */
-const TIMEOUT_PER_PERCOBAAN_MS = 25_000;
+const TIMEOUT_PER_PERCOBAAN_MS = 18_000;
+/**
+ * Jeda start antar-mirror (hedging). Mirror pertama diberi kesempatan duluan;
+ * bila belum menjawab dalam tenggang ini, mirror berikutnya ikut ditembak paralel
+ * supaya pengguna tidak menunggu satu server lambat sampai timeout.
+ */
+const JEDA_HEDGING_MS = 900;
 /** Berapa kali seluruh daftar endpoint diulang sebelum menyerah. */
 const JUMLAH_PUTARAN = 2;
+/** Kunci penyimpanan mirror yang terakhir berhasil, supaya dicoba lebih dulu. */
+const KUNCI_MIRROR_TERAKHIR = 'osm_mirror_tercepat';
+
+/** Urutkan mirror: yang terakhir berhasil ditaruh paling depan. */
+function urutkanMirror(): string[] {
+  try {
+    const terakhir = localStorage.getItem(KUNCI_MIRROR_TERAKHIR);
+    if (terakhir && OVERPASS_ENDPOINTS.includes(terakhir)) {
+      return [terakhir, ...OVERPASS_ENDPOINTS.filter((e) => e !== terakhir)];
+    }
+  } catch {
+    // localStorage tidak tersedia (mode privat/SSR) — pakai urutan bawaan.
+  }
+  return [...OVERPASS_ENDPOINTS];
+}
+
+function ingatMirror(endpoint: string): void {
+  try {
+    localStorage.setItem(KUNCI_MIRROR_TERAKHIR, endpoint);
+  } catch {
+    // Bukan kondisi fatal.
+  }
+}
 
 interface ElemenOverpass {
   id: number;
@@ -128,6 +157,69 @@ async function requestOverpass(
   }
 }
 
+/**
+ * Menembak seluruh mirror secara "hedged": mirror ke-N baru diluncurkan setelah
+ * `JEDA_HEDGING_MS * N`, dan yang pertama membalas dengan data langsung dipakai —
+ * sisanya dibatalkan. Ini jauh lebih cepat daripada menunggu mirror lambat sampai
+ * timeout, tapi tetap tidak membanjiri server publik saat mirror pertama sehat.
+ *
+ * Mengembalikan `[]` bila SEMUA mirror sepakat wilayahnya kosong; melempar error
+ * bila tidak ada satu pun mirror yang berhasil.
+ */
+function tembakSemuaMirror(query: string, signal: AbortSignal): Promise<ElemenOverpass[]> {
+  const pembatal = new AbortController();
+  const teruskanAbort = () => pembatal.abort();
+  if (signal.aborted) pembatal.abort();
+  signal.addEventListener('abort', teruskanAbort);
+
+  const daftar = urutkanMirror();
+  const tugas = daftar.map(async (endpoint, i) => {
+    if (i > 0) await jeda(i * JEDA_HEDGING_MS);
+    if (pembatal.signal.aborted) throw new DOMException('Dibatalkan', 'AbortError');
+    return requestOverpass(endpoint, query, pembatal.signal);
+  });
+
+  return new Promise<ElemenOverpass[]>((resolve, reject) => {
+    let sisa = tugas.length;
+    let adaBalasanKosong = false;
+    let kesalahanPertama: unknown = null;
+
+    const selesai = () => {
+      signal.removeEventListener('abort', teruskanAbort);
+      pembatal.abort(); // hentikan request yang masih menggantung
+    };
+
+    tugas.forEach((tugasMirror, i) => {
+      tugasMirror.then(
+        (data) => {
+          if (data.length > 0) {
+            ingatMirror(daftar[i]);
+            selesai();
+            resolve(data);
+            return;
+          }
+          // Balasan kosong belum tentu benar (bisa mirror bermasalah) — tunggu yang lain.
+          adaBalasanKosong = true;
+          if (--sisa === 0) {
+            selesai();
+            resolve([]);
+          }
+        },
+        (err) => {
+          kesalahanPertama ??= err;
+          console.warn(`Mirror Overpass gagal (${daftar[i]}):`, err);
+          if (--sisa === 0) {
+            selesai();
+            // Ada mirror yang bilang kosong → percayai itu daripada melempar error.
+            if (adaBalasanKosong) resolve([]);
+            else reject(kesalahanPertama);
+          }
+        }
+      );
+    });
+  });
+}
+
 /** Mengambil masjid & musala di sekitar koordinat dari Overpass API, terurut dari yang terdekat. */
 export async function ambilMasjidOsm(
   lat: number,
@@ -149,39 +241,22 @@ export async function ambilMasjidOsm(
     out center tags;
   `;
 
+  const pembatalLuar = signal ?? new AbortController().signal;
   let elements: ElemenOverpass[] | null = null;
-  let adaBalasanKosong = false;
   let kesalahanTerakhir: unknown = null;
 
-  // Failover: coba tiap mirror bergantian, lalu ulangi seluruh daftar sekali lagi
-  // dengan jeda — mirror publik sering menolak sesaat saat sedang ramai.
-  putaran: for (let putaran = 0; putaran < JUMLAH_PUTARAN; putaran++) {
-    for (const endpoint of OVERPASS_ENDPOINTS) {
-      if (signal?.aborted) throw new DOMException('Dibatalkan', 'AbortError');
-      try {
-        const hasil = await requestOverpass(endpoint, query, signal);
-
-        // Balasan kosong bisa berarti wilayahnya memang tidak punya masjid ter-tag,
-        // tapi bisa juga mirror-nya bermasalah. Cek ke mirror lain dulu sebelum
-        // menyimpulkan "tidak ada masjid".
-        if (hasil.length === 0) {
-          adaBalasanKosong = true;
-          continue;
-        }
-
-        elements = hasil;
-        break putaran;
-      } catch (err) {
-        // Pembatalan oleh pemanggil bukan kegagalan endpoint — hentikan segera.
-        if (signal?.aborted) throw err;
-        kesalahanTerakhir = err;
-        console.warn(`Endpoint Overpass gagal (${endpoint}):`, err);
-      }
+  // Satu putaran = semua mirror ditembak hedged. Diulang sekali lagi bila semuanya
+  // gagal — mirror publik sering menolak sesaat saat sedang ramai.
+  for (let putaran = 0; putaran < JUMLAH_PUTARAN; putaran++) {
+    if (pembatalLuar.aborted) throw new DOMException('Dibatalkan', 'AbortError');
+    try {
+      elements = await tembakSemuaMirror(query, pembatalLuar);
+      break;
+    } catch (err) {
+      if (pembatalLuar.aborted) throw err;
+      kesalahanTerakhir = err;
+      if (putaran < JUMLAH_PUTARAN - 1) await jeda(1200);
     }
-
-    // Semua mirror sepakat kosong → wilayah ini memang belum punya data masjid di OSM.
-    if (adaBalasanKosong) return [];
-    if (putaran < JUMLAH_PUTARAN - 1) await jeda(1200);
   }
 
   if (elements === null) {
