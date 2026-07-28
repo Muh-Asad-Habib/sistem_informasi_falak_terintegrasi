@@ -85,6 +85,46 @@ body {
   box-shadow: 0 0 15px rgba(15, 110, 61, 0.2);
 }
 
+/* Ruang aman untuk bottom nav mobile (termasuk gesture bar iOS/Android) */
+.pb-nav-safe {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .pb-nav-safe {
+    padding-bottom: 2rem;
+  }
+}
+
+/* Animasi bottom sheet "Menu Lainnya" */
+@keyframes sifa-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes sifa-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sifa-sheet-up {
+  animation: sifa-sheet-up 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sifa-fade-in {
+  animation: sifa-fade-in 0.2s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sifa-sheet-up,
+  .sifa-fade-in {
+    animation: none;
+  }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

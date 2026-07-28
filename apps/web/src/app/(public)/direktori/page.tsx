@@ -15,7 +15,7 @@ import {
   MazhabAsar,
   PrayerTimesResult,
 } from 'hisab-core';
-import { ambilMasjidOsmDenganCache, MasjidOsm } from '@/lib/osm';
+import { ambilMasjidOsmDenganCache, KesalahanOverpass, MasjidOsm } from '@/lib/osm';
 import { perkiraanTimezone } from '@/lib/lokasi';
 
 // MapLibre butuh `window` → hanya dimuat di klien.
@@ -44,6 +44,8 @@ export default function DirektoriPage() {
 
   const [mosques, setMosques] = useState<MasjidOsm[]>([]);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  /** true bila data yang tampil berasal dari cache kedaluwarsa (Overpass sedang tidak bisa dihubungi). */
+  const [dataBasi, setDataBasi] = useState(false);
 
   const [radius, setRadius] = useState(5);
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,18 +55,25 @@ export default function DirektoriPage() {
   const [mazhabAsar, setMazhabAsar] = useState<MazhabAsar>('Syafii');
   const [masjidTerbuka, setMasjidTerbuka] = useState<number | null>(null);
 
-  // ── Ambil masjid dari OSM lewat lib bersama (query & cache ada di lib/osm.ts) ──
+  // ── Ambil masjid dari OSM lewat lib bersama (query, failover & cache ada di lib/osm.ts) ──
   const loadMosques = useCallback(async (lat: number, lng: number, r: number) => {
     setLocationPhase('fetching');
     setFetchError(null);
+    setGpsError(null);
 
     try {
-      const { data } = await ambilMasjidOsmDenganCache(lat, lng, r);
+      const { data, basi } = await ambilMasjidOsmDenganCache(lat, lng, r);
       setMosques(data);
+      setDataBasi(Boolean(basi));
       setLocationPhase('done');
     } catch (e) {
       console.error(e);
-      setFetchError('Gagal mengambil data masjid dari OpenStreetMap. Periksa koneksi internet Anda dan coba lagi.');
+      setDataBasi(false);
+      setFetchError(
+        e instanceof KesalahanOverpass && e.sebab === 'offline'
+          ? 'Perangkat sedang offline, jadi data masjid terbaru belum bisa diambil. Sambungkan internet lalu coba lagi.'
+          : 'Server OpenStreetMap (Overpass) sedang sibuk atau tidak merespons. SIFA sudah mencoba beberapa server cadangan — silakan coba lagi beberapa saat.'
+      );
       setLocationPhase('error');
     }
   }, []);
@@ -242,11 +251,16 @@ export default function DirektoriPage() {
               Pastikan izin lokasi dan koneksi internet aktif, lalu coba lagi.
             </span>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={handleRetryGps} className="text-xs font-bold bg-sifa-green-900 text-white hover:bg-sifa-green-800">
+          <div className="flex flex-wrap justify-center gap-3">
+            {fetchError && userLoc && (
+              <Button onClick={() => loadMosques(userLoc.lat, userLoc.lng, radius)} className="text-xs font-bold">
+                Muat Ulang Data Masjid
+              </Button>
+            )}
+            <Button onClick={handleRetryGps} variant="outline" className="text-xs font-bold">
               Coba Lagi GPS
             </Button>
-            <Button onClick={handleUseUnismuh} variant="secondary" className="text-xs font-bold border border-card-border">
+            <Button onClick={handleUseUnismuh} variant="outline" className="text-xs font-bold">
               Gunakan Lokasi Unismuh
             </Button>
           </div>
@@ -256,6 +270,23 @@ export default function DirektoriPage() {
       {/* Main Content: done */}
       {locationPhase === 'done' && userLoc && (
         <>
+          {/* Penanda data dari cache (server Overpass sedang tidak bisa dihubungi) */}
+          {dataBasi && (
+            <div className="flex items-start gap-3 rounded-xl border border-sifa-gold-500/40 bg-sifa-gold-50 dark:bg-sifa-gold-900/10 p-3">
+              <span className="text-base leading-none" aria-hidden="true">📦</span>
+              <p className="text-[11px] leading-relaxed text-foreground/70">
+                Server OpenStreetMap sedang tidak bisa dihubungi, jadi daftar di bawah diambil dari{' '}
+                <strong>data tersimpan di perangkat Anda</strong>.{' '}
+                <button
+                  onClick={() => loadMosques(userLoc.lat, userLoc.lng, radius)}
+                  className="font-bold text-sifa-green-700 dark:text-sifa-green-400 hover:underline"
+                >
+                  Coba ambil data terbaru
+                </button>
+              </p>
+            </div>
+          )}
+
           {/* Controls Bar */}
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search */}

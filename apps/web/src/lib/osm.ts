@@ -21,8 +21,28 @@ export interface MasjidOsm {
   jenis: 'masjid' | 'musala';
 }
 
-const OVERPASS_ENDPOINT = 'https://overpass-api.de/api/interpreter';
+/**
+ * Daftar mirror Overpass (semuanya berdata PLANET, bukan ekstrak regional).
+ *
+ * Diuji 29 Jul 2026 untuk titik Makassar: mirror regional seperti `overpass.osm.ch`
+ * membalas 200 OK dengan 0 elemen — sengaja TIDAK dipakai karena kegagalannya senyap.
+ * Endpoint publik sering membalas 429/504 saat ramai, jadi wajib ada failover.
+ */
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+];
+
+/** TTL cache "segar" di sessionStorage. */
 const CACHE_TTL_MS = 5 * 60 * 1000;
+/** TTL cache cadangan di localStorage — dipakai saat semua endpoint gagal/offline. */
+const CACHE_BASI_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** Batas waktu satu percobaan request (Overpass sering menggantung saat ramai). */
+const TIMEOUT_PER_PERCOBAAN_MS = 25_000;
+/** Berapa kali seluruh daftar endpoint diulang sebelum menyerah. */
+const JUMLAH_PUTARAN = 2;
 
 interface ElemenOverpass {
   id: number;
@@ -31,6 +51,19 @@ interface ElemenOverpass {
   center?: { lat: number; lon: number };
   tags?: Record<string, string>;
 }
+
+/** Error khusus Overpass supaya UI bisa memberi pesan yang tepat (offline vs server sibuk). */
+export class KesalahanOverpass extends Error {
+  constructor(
+    message: string,
+    readonly sebab: 'offline' | 'sibuk' | 'jaringan'
+  ) {
+    super(message);
+    this.name = 'KesalahanOverpass';
+  }
+}
+
+const jeda = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function bangunAlamat(tags: Record<string, string>, lat: number, lng: number): string {
   const bagian = [
@@ -56,6 +89,45 @@ function tentukanJenis(tags: Record<string, string>): 'masjid' | 'musala' {
   return 'musala';
 }
 
+/**
+ * Satu percobaan request ke sebuah mirror Overpass, dengan batas waktu sendiri.
+ * Timeout internal tidak boleh membatalkan `signal` milik pemanggil, jadi dipakai
+ * AbortController terpisah yang ikut dibatalkan bila pemanggil membatalkan.
+ */
+async function requestOverpass(
+  endpoint: string,
+  query: string,
+  signal?: AbortSignal
+): Promise<ElemenOverpass[]> {
+  const kontrol = new AbortController();
+  const timer = setTimeout(() => kontrol.abort(), TIMEOUT_PER_PERCOBAAN_MS);
+  const teruskanAbort = () => kontrol.abort();
+  signal?.addEventListener('abort', teruskanAbort);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Accept: 'application/json',
+      },
+      body: `data=${encodeURIComponent(query)}`,
+      signal: kontrol.signal,
+    });
+
+    // 429 (rate limit) & 504 (gateway timeout) adalah kondisi normal di Overpass publik.
+    if (!response.ok) {
+      throw new Error(`Overpass ${new URL(endpoint).host} membalas ${response.status}`);
+    }
+
+    const data = (await response.json()) as { elements?: ElemenOverpass[] };
+    return data.elements ?? [];
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', teruskanAbort);
+  }
+}
+
 /** Mengambil masjid & musala di sekitar koordinat dari Overpass API, terurut dari yang terdekat. */
 export async function ambilMasjidOsm(
   lat: number,
@@ -63,9 +135,13 @@ export async function ambilMasjidOsm(
   radiusKm: number,
   signal?: AbortSignal
 ): Promise<MasjidOsm[]> {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new KesalahanOverpass('Perangkat sedang offline.', 'offline');
+  }
+
   const radiusM = radiusKm * 1000;
   const query = `
-    [out:json][timeout:25];
+    [out:json][timeout:20];
     (
       node["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${lat},${lng});
       way["amenity"="place_of_worship"]["religion"="muslim"](around:${radiusM},${lat},${lng});
@@ -73,18 +149,54 @@ export async function ambilMasjidOsm(
     out center tags;
   `;
 
-  const response = await fetch(OVERPASS_ENDPOINT, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `data=${encodeURIComponent(query)}`,
-    signal,
-  });
+  let elements: ElemenOverpass[] | null = null;
+  let adaBalasanKosong = false;
+  let kesalahanTerakhir: unknown = null;
 
-  if (!response.ok) throw new Error(`Overpass API error: ${response.status}`);
+  // Failover: coba tiap mirror bergantian, lalu ulangi seluruh daftar sekali lagi
+  // dengan jeda — mirror publik sering menolak sesaat saat sedang ramai.
+  putaran: for (let putaran = 0; putaran < JUMLAH_PUTARAN; putaran++) {
+    for (const endpoint of OVERPASS_ENDPOINTS) {
+      if (signal?.aborted) throw new DOMException('Dibatalkan', 'AbortError');
+      try {
+        const hasil = await requestOverpass(endpoint, query, signal);
 
-  const data = (await response.json()) as { elements: ElemenOverpass[] };
+        // Balasan kosong bisa berarti wilayahnya memang tidak punya masjid ter-tag,
+        // tapi bisa juga mirror-nya bermasalah. Cek ke mirror lain dulu sebelum
+        // menyimpulkan "tidak ada masjid".
+        if (hasil.length === 0) {
+          adaBalasanKosong = true;
+          continue;
+        }
 
-  return data.elements
+        elements = hasil;
+        break putaran;
+      } catch (err) {
+        // Pembatalan oleh pemanggil bukan kegagalan endpoint — hentikan segera.
+        if (signal?.aborted) throw err;
+        kesalahanTerakhir = err;
+        console.warn(`Endpoint Overpass gagal (${endpoint}):`, err);
+      }
+    }
+
+    // Semua mirror sepakat kosong → wilayah ini memang belum punya data masjid di OSM.
+    if (adaBalasanKosong) return [];
+    if (putaran < JUMLAH_PUTARAN - 1) await jeda(1200);
+  }
+
+  if (elements === null) {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      throw new KesalahanOverpass('Perangkat sedang offline.', 'offline');
+    }
+    throw new KesalahanOverpass(
+      `Semua server OpenStreetMap (Overpass) sedang tidak merespons. Penyebab terakhir: ${
+        kesalahanTerakhir instanceof Error ? kesalahanTerakhir.message : 'tidak diketahui'
+      }`,
+      'sibuk'
+    );
+  }
+
+  return elements
     .filter((el) => el.lat !== undefined || el.center !== undefined)
     .map((el) => {
       const mLat = el.lat ?? el.center!.lat;
@@ -115,44 +227,50 @@ export async function ambilMasjidOsm(
 
 /**
  * Versi ber-cache: hasil disimpan di `sessionStorage` (TTL 5 menit) supaya beranda &
- * direktori tidak memanggil Overpass berulang kali, dan tetap ada data saat jaringan
- * putus di tengah sesi (offline-first, AGENTS.md poin 4).
+ * direktori tidak memanggil Overpass berulang kali, plus salinan di `localStorage`
+ * (TTL 7 hari) sebagai cadangan saat Overpass mati atau perangkat offline
+ * (offline-first, AGENTS.md poin 4).
  */
 export async function ambilMasjidOsmDenganCache(
   lat: number,
   lng: number,
   radiusKm: number,
   signal?: AbortSignal
-): Promise<{ data: MasjidOsm[]; dariCache: boolean }> {
+): Promise<{ data: MasjidOsm[]; dariCache: boolean; basi?: boolean }> {
   const kunci = `osm_masjid_${lat.toFixed(3)}_${lng.toFixed(3)}_${radiusKm}`;
 
-  const bacaCache = (abaikanTtl = false): MasjidOsm[] | null => {
+  const bacaDari = (store: Storage | undefined, maksUmurMs: number): MasjidOsm[] | null => {
     try {
-      const mentah = sessionStorage.getItem(kunci);
+      const mentah = store?.getItem(kunci);
       if (!mentah) return null;
       const { data, ts } = JSON.parse(mentah) as { data: MasjidOsm[]; ts: number };
-      if (abaikanTtl || Date.now() - ts < CACHE_TTL_MS) return data;
-      return null;
+      if (!Array.isArray(data) || data.length === 0) return null;
+      return Date.now() - ts < maksUmurMs ? data : null;
     } catch {
       return null;
     }
   };
 
-  const segar = bacaCache();
+  const storeSesi = typeof sessionStorage !== 'undefined' ? sessionStorage : undefined;
+  const storeLokal = typeof localStorage !== 'undefined' ? localStorage : undefined;
+
+  const segar = bacaDari(storeSesi, CACHE_TTL_MS);
   if (segar) return { data: segar, dariCache: true };
 
   try {
     const data = await ambilMasjidOsm(lat, lng, radiusKm, signal);
+    const rekam = JSON.stringify({ data, ts: Date.now() });
     try {
-      sessionStorage.setItem(kunci, JSON.stringify({ data, ts: Date.now() }));
+      storeSesi?.setItem(kunci, rekam);
+      storeLokal?.setItem(kunci, rekam);
     } catch {
       // Mode privat / storage penuh — bukan kondisi fatal.
     }
     return { data, dariCache: false };
   } catch (err) {
     // Gagal jaringan: pakai cache kedaluwarsa bila ada, daripada layar kosong.
-    const basi = bacaCache(true);
-    if (basi) return { data: basi, dariCache: true };
+    const basi = bacaDari(storeSesi, CACHE_BASI_TTL_MS) ?? bacaDari(storeLokal, CACHE_BASI_TTL_MS);
+    if (basi) return { data: basi, dariCache: true, basi: true };
     throw err;
   }
 }
