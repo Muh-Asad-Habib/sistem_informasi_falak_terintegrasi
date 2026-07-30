@@ -5,6 +5,12 @@
 ## Status Saat Ini
 **Fase aktif:** Fase 5 — audit & pengerasan (hardening). Seluruh fitur MVP sudah ada; sesi 28 Juli 2026 (bagian 1) menutup temuan integritas, dan sesi 28 Juli 2026 (bagian 2) menambahkan pilihan multi-metode hisab + peta masjid terdekat.
 
+## Audit Menyeluruh 30 Juli 2026
+- Laporan lengkap fungsi, desain, UI/UX, aksesibilitas, offline, dan kesiapan rilis disimpan di `docs/audit-aplikasi-ui-ux-fungsi-2026-07-30.md`.
+- Verifikasi saat audit: `npm test` **33/33 lolos**, lint web bersih, dan production build berhasil; belum ada E2E maupun bukti uji perangkat nyata.
+- Release blocker utama: inkonsistensi tanggal sipil/UTC pada jadwal salat, implementasi KHGT yang memakai satu titik hardcode sebagai proksi global, contoh kiblat Edukasi salah, klaim presisi kompas tanpa koreksi utara magnetik, snapshot laporan Takmir dapat tidak konsisten, klaim privasi bertentangan dengan pengiriman koordinat ke Overpass/Google Maps, dan formula transparansi UI tidak sama dengan algoritma produksi.
+- Urutan berikutnya: kerjakan **Sprint 0** di laporan audit sebelum menambah fitur baru; setiap perubahan `hisab-core` wajib disertai regression/golden test dan validasi sumber falak.
+
 **Pekerjaan berikutnya:**
 1. Survei lapangan Fase 0 yang sesungguhnya — koordinat & azimuth saf 3–5 masjid AUM (data karangan sudah dihapus, entri sekarang berstatus `belum_terverifikasi`).
 2. Konfirmasi ke pembimbing AIK soal ketinggian awal Subuh Muhammadiyah (-20° modul vs wacana -18°) — sudah ditandai `TODO: perlu konfirmasi` di `PARAMETER_METODE`.
