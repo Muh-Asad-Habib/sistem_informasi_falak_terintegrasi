@@ -49,13 +49,19 @@ export default function PemilihMetode({
   const p = PARAMETER_METODE[metode];
 
   return (
-    <div className={`flex flex-col gap-3 ${ringkas ? '' : 'sm:flex-row sm:gap-4'}`}>
-      <div className="flex flex-col gap-1 flex-1 min-w-0">
+    <div
+      className={
+        ringkas
+          ? 'flex flex-col gap-3'
+          : 'flex flex-col gap-3 sm:grid sm:grid-cols-2 sm:gap-x-4 sm:gap-y-3'
+      }
+    >
+      <div className="flex flex-col gap-1 min-w-0">
         <label
           htmlFor={`${idPrefix}-metode`}
           className="text-[10px] font-bold uppercase tracking-wider text-foreground/50"
         >
-          Metode perhitungan
+          Metode perhitungan    
         </label>
         <select
           id={`${idPrefix}-metode`}
@@ -76,7 +82,7 @@ export default function PemilihMetode({
         </select>
       </div>
 
-      <div className="flex flex-col gap-1 flex-1 min-w-0">
+      <div className="flex flex-col gap-1 min-w-0">
         <label
           htmlFor={`${idPrefix}-mazhab`}
           className="text-[10px] font-bold uppercase tracking-wider text-foreground/50"
@@ -94,12 +100,8 @@ export default function PemilihMetode({
         </select>
       </div>
 
-      {!ringkas && (
-        <div className="sm:hidden" />
-      )}
-
-      <div className={`flex flex-col gap-0.5 ${ringkas ? '' : 'sm:basis-full'}`}>
-        <span className="text-[10px] text-foreground/45 leading-relaxed">
+      <div className={`flex flex-col gap-0.5 min-w-0 ${ringkas ? '' : 'sm:col-span-2'}`}>
+        <span className="text-[10px] text-foreground/45 leading-relaxed break-words">
           {p.wilayah} · {p.sumber}
         </span>
         {p.statusRujukan === 'perlu_konfirmasi' && (

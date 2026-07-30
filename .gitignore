@@ -36,3 +36,7 @@ _modul_text.txt
 dev.log
 tunnel.log
 
+# binary cloudflared lokal (jangan di-commit, ~52 MB)
+cloudflared.exe
+cloudflared
+
