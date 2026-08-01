@@ -17,7 +17,7 @@ export function Button({
   
   const variants = {
     primary: 'bg-sifa-green-900 text-white hover:bg-sifa-green-800 dark:bg-sifa-green-700 dark:hover:bg-sifa-green-600 shadow-md shadow-sifa-green-900/10 hover:shadow-lg hover:shadow-sifa-green-900/15',
-    secondary: 'bg-sifa-gold-500 text-sifa-foreground hover:bg-sifa-gold-600 dark:bg-sifa-gold-600 dark:hover:bg-sifa-gold-500 shadow-md shadow-sifa-gold-500/10',
+    secondary: 'bg-sifa-gold-500 text-sifa-green-950 dark:text-sifa-gold-50 hover:bg-sifa-gold-600 dark:bg-sifa-gold-600 dark:hover:bg-sifa-gold-500 shadow-md shadow-sifa-gold-500/10',
     outline: 'border border-card-border bg-transparent text-foreground hover:bg-sifa-green-50 hover:text-sifa-green-900 dark:hover:bg-sifa-green-900/20 dark:hover:text-white',
     ghost: 'text-foreground hover:bg-sifa-green-50 hover:text-sifa-green-900 dark:hover:bg-sifa-green-900/20 dark:hover:text-white',
   };
