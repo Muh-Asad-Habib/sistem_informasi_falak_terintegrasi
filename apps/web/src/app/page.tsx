@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import PrayerCountdown from '@/components/features/PrayerCountdown';
 import { hitungJadwalSalat, hitungArahKiblat, formatJarak, PrayerTimesResult } from 'hisab-core';
@@ -140,11 +139,15 @@ export default function Home() {
     { label: 'Maghrib', val: schedule.magrib },
     { label: 'Isya', val: schedule.isya },
   ] : [];
-  const currentMinutes = currentTime ? currentTime.getHours() * 60 + currentTime.getMinutes() : -1;
-  const activePrayer = todayPrayers.reduce((active, prayer) => {
-    const [hours, minutes] = prayer.val.split(':').map(Number);
-    return currentMinutes >= hours * 60 + minutes ? prayer.label : active;
-  }, 'Isya');
+  const currentMinutes = currentTime ? currentTime.getHours() * 60 + currentTime.getMinutes() : null;
+  // Sebelum jam klien tersedia, tidak ada waktu yang disorot (hindari highlight keliru saat hidrasi).
+  // Bila semua waktu hari ini sudah lewat, yang aktif adalah Isya.
+  const activePrayer = currentMinutes === null
+    ? ''
+    : todayPrayers.reduce((active, prayer) => {
+        const [hours, minutes] = prayer.val.split(':').map(Number);
+        return currentMinutes >= hours * 60 + minutes ? prayer.label : active;
+      }, 'Isya');
 
   return (
     <div className="flex flex-col gap-10 py-6 max-w-5xl mx-auto">
@@ -156,9 +159,9 @@ export default function Home() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-sifa-green-500/5 rounded-full blur-3xl -z-10" />
 
         <div className="flex-1 flex flex-col gap-4 text-center md:text-left">
-          <Badge variant="green" className="font-extrabold tracking-wider uppercase self-center md:self-start bg-sifa-green-100/50 dark:bg-sifa-green-900/30 text-sifa-green-900 dark:text-sifa-green-500 border border-sifa-green-900/10 dark:border-sifa-green-500/20 text-[10px] px-3 py-1">
+          <span className="inline-flex items-center rounded-full font-extrabold tracking-wider uppercase self-center md:self-start bg-sifa-green-100/50 dark:bg-sifa-green-900/30 text-sifa-green-900 dark:text-sifa-green-500 border border-sifa-green-900/10 dark:border-sifa-green-500/20 text-[10px] px-3 py-1 select-none">
             Platform Falak Terintegrasi
-          </Badge>
+          </span>
           <h1 className="font-heading text-4xl md:text-5xl font-extrabold text-foreground tracking-tight leading-tight">
             Sistem Informasi <br/>
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-400 drop-shadow-sm font-black">
@@ -169,23 +172,24 @@ export default function Home() {
             Platform integrasi ilmu falak praktis untuk arah kiblat, waktu salat, dan penanggalan syar&apos;i Muhammadiyah &amp; KHGT.
           </p>
 
-          <div className="flex flex-wrap gap-3 mt-2 justify-center md:justify-start">
-            <Link href="/kiblat">
-              <Button className="flex items-center gap-2 rounded-2xl px-6 py-3 font-bold bg-sifa-green-900 text-white hover:bg-sifa-green-800 shadow-md shadow-sifa-green-900/20 transition-all hover:-translate-y-0.5">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Cek Arah Kiblat
-              </Button>
+          <div className="flex flex-wrap gap-3 mt-2 justify-center md:justify-start"><Link
+              href="/kiblat"
+              className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold bg-sifa-green-900 text-white hover:bg-sifa-green-800 shadow-md shadow-sifa-green-900/20 transition-all hover:-translate-y-0.5 active:scale-[0.98] select-none"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Cek Arah Kiblat
             </Link>
-            <Link href="/waktu-salat">
-              <Button variant="secondary" className="flex items-center gap-2 rounded-2xl px-6 py-3 font-bold border border-sifa-gold-500/30 text-sifa-gold-600 dark:text-sifa-gold-500 hover:bg-sifa-gold-500 hover:text-white transition-all hover:-translate-y-0.5">
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Lihat Jadwal Salat
-              </Button>
+            <Link
+              href="/waktu-salat"
+              className="inline-flex items-center gap-2 rounded-2xl px-6 py-3 text-sm font-bold border border-sifa-gold-500/40 text-sifa-gold-600 dark:text-sifa-gold-500 hover:bg-sifa-gold-500 hover:text-sifa-green-950 transition-all hover:-translate-y-0.5 active:scale-[0.98] select-none"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Lihat Jadwal Salat
             </Link>
           </div>
         </div>
@@ -271,13 +275,14 @@ export default function Home() {
               </div>
             </div>
 
-            <Link href="/kiblat" className="w-full">
-              <Button variant="secondary" className="w-full flex items-center justify-center gap-1.5 text-xs font-bold py-2 border border-card-border/50 hover:bg-card-border/20">
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-                Kalibrasi Kompas
-              </Button>
+            <Link
+              href="/kiblat"
+              className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold py-2 rounded-xl border border-card-border/60 text-foreground/80 hover:bg-foreground/5 hover:text-sifa-green-900 dark:hover:text-sifa-green-100 transition-colors active:scale-[0.98] select-none"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              Kalibrasi Kompas
             </Link>
           </Card>
 
@@ -311,8 +316,9 @@ export default function Home() {
               <div className="flex items-center justify-between sm:flex-col sm:items-end gap-2 shrink-0">
                 <Button
                   onClick={detectLocation}
-                  variant="secondary"
-                  className="text-[10px] font-bold py-1.5 px-3 border border-card-border/50 hover:bg-card-border/20 flex items-center gap-1.5 whitespace-nowrap"
+                  variant="outline"
+                  size="sm"
+                  className="text-[10px] font-bold py-1.5 px-3 flex items-center gap-1.5 whitespace-nowrap"
                 >
                   🔄 Perbarui Lokasi
                 </Button>
@@ -394,7 +400,7 @@ export default function Home() {
                     key={idx} 
                     className={`flex items-center justify-between p-2.5 rounded-xl border border-transparent transition-all ${
                       s.label === activePrayer
-                        ? 'bg-sifa-green-900 text-sifa-green-50 font-bold shadow-md shadow-sifa-green-900/10' 
+                        ? 'bg-sifa-green-900 text-white font-bold shadow-md shadow-sifa-green-900/10' 
                         : 'bg-card-border/5 border-card-border/20 text-foreground/80 hover:bg-card-border/10'
                     }`}
                   >
@@ -405,10 +411,11 @@ export default function Home() {
               </div>
             )}
 
-            <Link href="/waktu-salat" className="w-full">
-              <Button variant="secondary" className="w-full flex items-center justify-center gap-1 text-xs font-bold py-2.5 border border-card-border/50 hover:bg-card-border/20">
-                Lihat Jadwal Lengkap
-              </Button>
+            <Link
+              href="/waktu-salat"
+              className="w-full inline-flex items-center justify-center gap-1 text-xs font-bold py-2.5 rounded-xl border border-card-border/60 text-foreground/80 hover:bg-foreground/5 hover:text-sifa-green-900 dark:hover:text-sifa-green-100 transition-colors active:scale-[0.98] select-none"
+            >
+              Lihat Jadwal Lengkap
             </Link>
           </Card>
 
@@ -424,7 +431,7 @@ export default function Home() {
                 <Card className="p-4 h-full flex flex-col gap-2 border-card-border/40 hover:border-sifa-green-900/30 hover:shadow-md transition-all duration-300">
                   <span className="text-2xl">{f.icon}</span>
                   <div className="flex flex-col gap-0.5 mt-1">
-                    <span className="text-xs font-extrabold text-sifa-green-900 dark:text-sifa-green-100 leading-tight group-hover:text-emerald-500 transition-colors">
+                    <span className="text-xs font-extrabold text-sifa-green-900 dark:text-sifa-green-100 leading-tight group-hover:text-sifa-green-500 transition-colors">
                       {f.title}
                     </span>
                     <span className="text-[10px] text-foreground/40 font-medium">
@@ -477,9 +484,9 @@ export default function Home() {
                 {/* Visual placeholder mimicking image with gradient */}
                 <div className={`h-32 bg-gradient-to-br ${art.bgClass} p-4 flex flex-col justify-between relative`}>
                   <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
-                  <Badge variant="green" className="self-start text-[8px] uppercase tracking-wider font-extrabold bg-white/20 text-white border border-white/20">
+                  <span className="inline-flex items-center rounded-full self-start text-[8px] uppercase tracking-wider font-extrabold bg-white/20 text-white border border-white/20 px-2.5 py-0.5 select-none">
                     {art.cat}
-                  </Badge>
+                  </span>
                   {/* Subtle stars SVG graphic inside */}
                   <svg className="absolute top-2 right-2 w-8 h-8 text-white/20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <circle cx="5" cy="5" r="0.8" /><circle cx="15" cy="8" r="0.5" /><circle cx="20" cy="18" r="0.8" />
@@ -487,7 +494,7 @@ export default function Home() {
                 </div>
 
                 <div className="p-4 flex flex-col gap-2 flex-1">
-                  <h4 className="text-xs font-bold text-sifa-green-900 dark:text-sifa-green-100 group-hover:text-emerald-500 transition-colors leading-snug">
+                  <h4 className="text-xs font-bold text-sifa-green-900 dark:text-sifa-green-100 group-hover:text-sifa-green-500 transition-colors leading-snug">
                     {art.title}
                   </h4>
                   <span className="text-[10px] text-foreground/45 leading-relaxed">
