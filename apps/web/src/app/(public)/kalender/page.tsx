@@ -136,7 +136,7 @@ export default function KalenderPage() {
   const calendarCells = [];
   // Kosongkan slot sebelum tanggal 1
   for (let i = 0; i < firstDayOfMonth; i++) {
-    calendarCells.push(<div key={`empty-${i}`} className="h-16 border border-card-border/30 bg-foreground/[0.02]" />);
+    calendarCells.push(<div key={`empty-${i}`} className="h-12 sm:h-16 border border-card-border/30 bg-foreground/[0.02]" />);
   }
 
   // Isi tanggal Masehi & Hijriah
@@ -165,25 +165,25 @@ export default function KalenderPage() {
     calendarCells.push(
       <div
         key={`day-${d}`}
-        className={`h-16 p-1.5 border border-card-border/40 flex flex-col justify-between transition-colors relative ${
+        className={`h-12 sm:h-16 p-1 sm:p-1.5 border border-card-border/40 flex flex-col justify-between transition-colors relative min-w-0 ${
           isToday ? 'bg-sifa-green-50 border-sifa-green-600 dark:bg-sifa-green-900/10' : 'bg-card-bg hover:bg-foreground/[0.01]'
         }`}
       >
-        <div className="flex justify-between items-start">
-          <span className={`text-xs font-bold ${isToday ? 'text-sifa-green-900 dark:text-sifa-green-100' : 'text-foreground/80'}`}>
+        <div className="flex justify-between items-start gap-0.5">
+          <span className={`text-[11px] sm:text-xs font-bold ${isToday ? 'text-sifa-green-900 dark:text-sifa-green-100' : 'text-foreground/80'}`}>
             {d}
           </span>
-          <span className="text-[10px] font-mono text-sifa-gold-600 font-bold">
+          <span className="text-[9px] sm:text-[10px] font-mono text-sifa-gold-600 font-bold">
             {hDate.day}
           </span>
         </div>
         
         {isHoliday ? (
-          <span className="text-[8px] bg-sifa-gold-100 text-sifa-gold-900 dark:bg-sifa-gold-900/30 dark:text-sifa-gold-100 font-bold px-1 py-0.5 rounded truncate">
+          <span className="text-[7px] sm:text-[8px] bg-sifa-gold-100 text-sifa-gold-900 dark:bg-sifa-gold-900/30 dark:text-sifa-gold-600 font-bold px-0.5 sm:px-1 py-0.5 rounded truncate">
             {holidayLabel}
           </span>
         ) : (
-          <span className="text-[8px] text-foreground/40 truncate text-right font-semibold">
+          <span className="text-[7px] sm:text-[8px] text-foreground/40 truncate text-right font-semibold">
             {hDate.monthName}
           </span>
         )}
@@ -204,11 +204,21 @@ export default function KalenderPage() {
         </p>
       </div>
 
-      {/* Educational Banner */}
-      <div className="rounded-2xl bg-gradient-to-br from-sifa-green-50 to-sifa-gold-50 border border-sifa-gold-500/30 p-5 flex flex-col gap-3 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/20">
-        <p className="text-sm text-sifa-green-950 dark:text-sifa-green-100 leading-relaxed font-medium">
-          Kalender ini mengintegrasikan dua sistem penanggalan: Masehi (Gregorian) berdasarkan peredaran Bumi mengelilingi Matahari, dan Hijriah berdasarkan peredaran Bulan mengelilingi Bumi. Pada tab <strong>Kriteria Awal Bulan</strong>, posisi hilal hasil hisab diuji terhadap beberapa kriteria sekaligus — Wujudul Hilal &amp; KHGT (Muhammadiyah), MABIMS baru &amp; lama (dipakai Kemenag RI), serta Istanbul 2016 — sehingga terlihat jelas mengapa penetapan awal bulan bisa berbeda antar-lembaga.
-        </p>
+      {/* Educational Banner — pola seragam dengan halaman lain */}
+      <div className="rounded-2xl bg-gradient-to-r from-sifa-green-50 to-sifa-gold-50 dark:from-sifa-green-900/20 dark:to-sifa-gold-900/20 border border-sifa-gold-500/30 p-5">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-sifa-green-900 text-sifa-gold-500 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 text-sm">Tentang Kalender Masehi-Hijriah</span>
+            <p className="text-xs leading-relaxed text-foreground/70">
+              Kalender ini mengintegrasikan dua sistem penanggalan: <strong>Masehi (Gregorian)</strong> berdasarkan peredaran Bumi mengelilingi Matahari, dan <strong>Hijriah</strong> berdasarkan peredaran Bulan mengelilingi Bumi. Pada tab <strong>Kriteria Awal Bulan</strong>, posisi hilal hasil hisab diuji terhadap beberapa kriteria sekaligus — Wujudul Hilal &amp; KHGT (Muhammadiyah), MABIMS baru &amp; lama (dipakai Kemenag RI), serta Istanbul 2016 — sehingga terlihat jelas mengapa penetapan awal bulan bisa berbeda antar-lembaga.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Tabs — bisa digeser di layar kecil supaya label tidak bertumpuk */}
@@ -247,32 +257,28 @@ export default function KalenderPage() {
               <div className="flex items-center gap-2">
                 <button onClick={goToToday} className="text-[11px] px-3 py-1 rounded-lg border border-card-border hover:border-sifa-green-600 hover:text-sifa-green-900 transition-colors font-semibold text-foreground/60 whitespace-nowrap">Bulan Ini</button>
                 <Badge variant="gold" className="font-mono text-[10px] whitespace-nowrap">
-                  {getTabularHijri(new Date(year, month, 1)).monthName} {getTabularHijri(viewMonth).year} H
+                  {getTabularHijri(new Date(year, month, 1)).monthName} {getTabularHijri(new Date(year, month, 1)).year} H
                 </Badge>
               </div>
             </div>
 
-            {/* Grid kalender — bisa digeser mendatar di layar sempit */}
-            <div className="overflow-x-auto -mx-1 px-1">
-              <div className="min-w-[560px]">
-                {/* Days of Week Header */}
-                <div className="grid grid-cols-7 text-center font-bold text-xs py-2 bg-foreground/5 rounded-t-lg border-x border-t border-card-border/60">
-                  {NAMA_HARI.map((day, idx) => (
-                    <div key={idx} className={idx === 0 ? 'text-red-500' : 'text-foreground/70'}>
-                      {day}
-                    </div>
-                  ))}
-                </div>
+            {/* Grid kalender — selalu tampil penuh, menyesuaikan lebar layar */}
+            <div>
+              {/* Days of Week Header */}
+              <div className="grid grid-cols-7 text-center font-bold text-[10px] sm:text-xs py-2 bg-foreground/5 rounded-t-lg border-x border-t border-card-border/60">
+                {NAMA_HARI.map((day, idx) => (
+                  <div key={idx} className={idx === 0 ? 'text-red-500' : 'text-foreground/70'}>
+                    <span className="sm:hidden">{day.slice(0, 3)}</span>
+                    <span className="hidden sm:inline">{day}</span>
+                  </div>
+                ))}
+              </div>
 
-                {/* Calendar Cells Grid */}
-                <div className="grid grid-cols-7 border-l border-b border-card-border/60">
-                  {calendarCells}
-                </div>
+              {/* Calendar Cells Grid */}
+              <div className="grid grid-cols-7 border-l border-b border-card-border/60">
+                {calendarCells}
               </div>
             </div>
-            <p className="text-[10px] text-foreground/40 mt-2 sm:hidden">
-              Geser tabel ke samping untuk melihat seluruh kolom hari.
-            </p>
           </Card>
 
           {/* Sidebar Information */}
@@ -299,7 +305,7 @@ export default function KalenderPage() {
                 SIFA menyajikan kalender Hijriah tabular berdasarkan algoritma aritmatika astronomis sebagai acuan konversi bulanan.
               </p>
               <p>
-                Untuk penentuan bulan-bulan penting ibadah syar&apos;i (Puasa Ramadan dan Hari Raya), hasil kalkulasi dapat divalidasi secara toposentris pada tab **Kriteria Awal Bulan**.
+                Untuk penentuan bulan-bulan penting ibadah syar&apos;i (Puasa Ramadan dan Hari Raya), hasil kalkulasi dapat divalidasi secara toposentris pada tab <strong>Kriteria Awal Bulan</strong>.
               </p>
             </Card>
           </div>
@@ -358,7 +364,7 @@ export default function KalenderPage() {
                   onClick={() => setTargetBulan(b)}
                   className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${
                     targetBulan === b
-                      ? 'bg-sifa-green-900 text-white border-sifa-green-950 dark:bg-sifa-green-700'
+                      ? 'bg-sifa-green-900 text-white border-sifa-green-950 dark:border-sifa-green-500'
                       : 'border-card-border bg-foreground/5 text-foreground hover:bg-foreground/10'
                   }`}
                 >
