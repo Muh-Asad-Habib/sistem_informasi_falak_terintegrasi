@@ -1,15 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SIFA — Sistem Informasi Falak Terintegrasi">
-  <!-- Latar full-bleed (maskable) — gradien hijau SIFA, sama dengan logo header -->
+  <!-- Latar: gradien hijau SIFA dengan sudut membulat, sama seperti logo header -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#0B4630"/>
       <stop offset="1" stop-color="#0D573B"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Cincin emas dekoratif (border logo header) -->
+  <rect x="10" y="10" width="492" height="492" rx="102" fill="none" stroke="#C9A227" stroke-width="8" opacity="0.35"/>
 
-  <!-- Kubus Ka'bah + bulan sabit — artwork identik dengan SifaLogo.tsx (aman untuk area maskable) -->
-  <g transform="translate(96 96) scale(10)" stroke-linejoin="round">
+  <!-- Kubus Ka'bah + bulan sabit — artwork identik dengan SifaLogo.tsx (skala 32 → 512, isi 70%) -->
+  <g transform="translate(76.8 76.8) scale(11.2)" stroke-linejoin="round">
     <!-- Sisi atas (belah ketupat) -->
     <path d="M16 4L26 9.5V15L16 20.5L6 15V9.5L16 4Z" fill="#C9A227" fill-opacity="0.15" stroke="#C9A227" stroke-width="1.5"/>
     <!-- Sisi depan -->
