@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import PerbandinganMetode from '@/components/features/PerbandinganMetode';
@@ -304,6 +304,21 @@ export default function EdukasiPage() {
     ? ARTIKEL
     : ARTIKEL.filter((a) => a.kategori === activeKategori);
 
+  // Modal artikel: tutup dengan Escape & kunci scroll latar (konsisten dengan sheet AppNav)
+  useEffect(() => {
+    if (!selectedArticle) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedArticle(null);
+    };
+    window.addEventListener('keydown', onKey);
+    const sebelumnya = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = sebelumnya;
+    };
+  }, [selectedArticle]);
+
   const handleCalculate = () => {
     const lat = parseFloat(latInput);
     const lng = parseFloat(lngInput);
@@ -378,23 +393,9 @@ export default function EdukasiPage() {
         </div>
       </div>
 
-      {/* Featured Modules Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-        {ARTIKEL.map((art) => (
-          <button
-            key={art.id}
-            onClick={() => setSelectedArticle(art)}
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-card-border bg-card-bg hover:border-sifa-green-600 hover:bg-sifa-green-50 dark:hover:bg-sifa-green-900/20 transition-all duration-200 group text-center"
-          >
-            <span className="text-3xl group-hover:scale-110 transition-transform duration-200">{art.icon}</span>
-            <span className="text-[10px] font-bold text-foreground/50 uppercase tracking-wide">{art.kategori}</span>
-            <span className="text-xs font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100 leading-tight">{art.judul.split('&')[0]}</span>
-          </button>
-        ))}
-      </div>
 
       {/* ── Informasi: Perbandingan Metode Hisab ─────────────────────────── */}
-      <section className="flex flex-col gap-5 border-t border-card-border/40 pt-8">
+      <section className="flex flex-col gap-5">
         <div className="flex flex-col gap-1.5">
           <h2 className="font-heading text-xl font-bold text-sifa-green-900 dark:text-sifa-green-100">
             Informasi Falak: Perbandingan Metode Perhitungan
@@ -561,7 +562,7 @@ export default function EdukasiPage() {
                 <span className="text-3xl group-hover:scale-110 transition-transform duration-200 flex-shrink-0">{art.icon}</span>
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] bg-sifa-green-100 dark:bg-sifa-green-900/40 text-sifa-green-800 dark:text-sifa-green-200 px-2 py-0.5 rounded font-bold uppercase tracking-wide">
+                    <span className="text-[9px] bg-sifa-green-100 text-sifa-green-800 px-2 py-0.5 rounded font-bold uppercase tracking-wide">
                       {art.kategori}
                     </span>
                   </div>
@@ -606,9 +607,11 @@ export default function EdukasiPage() {
 
             <div className="flex flex-col gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-foreground/60 uppercase tracking-wide">Lintang (Latitude)</label>
+                <label htmlFor="edu-calc-lat" className="text-[10px] font-bold text-foreground/60 uppercase tracking-wide">Lintang (Latitude)</label>
                 <input
+                  id="edu-calc-lat"
                   type="text"
+                  inputMode="decimal"
                   value={latInput}
                   onChange={(e) => setLatInput(e.target.value)}
                   className="px-3 py-2.5 border border-card-border rounded-xl text-sm bg-background text-foreground font-mono focus:outline-none focus:border-sifa-green-600 transition-colors"
@@ -616,9 +619,11 @@ export default function EdukasiPage() {
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-foreground/60 uppercase tracking-wide">Bujur (Longitude)</label>
+                <label htmlFor="edu-calc-lng" className="text-[10px] font-bold text-foreground/60 uppercase tracking-wide">Bujur (Longitude)</label>
                 <input
+                  id="edu-calc-lng"
                   type="text"
+                  inputMode="decimal"
                   value={lngInput}
                   onChange={(e) => setLngInput(e.target.value)}
                   className="px-3 py-2.5 border border-card-border rounded-xl text-sm bg-background text-foreground font-mono focus:outline-none focus:border-sifa-green-600 transition-colors"
@@ -657,10 +662,10 @@ export default function EdukasiPage() {
               <div className="flex flex-col gap-2">
                 {calcResult.steps.map((st, idx) => (
                   <div key={idx} className="flex gap-2 text-xs">
-                    <span className="w-5 h-5 rounded-full bg-sifa-green-900/20 dark:bg-sifa-green-900/40 text-sifa-green-900 dark:text-sifa-green-100 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                    <span className="w-5 h-5 rounded-full bg-sifa-green-900/20 dark:bg-sifa-green-100 text-sifa-green-900 dark:text-sifa-green-800 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
                       {idx + 1}
                     </span>
-                    <span className="font-mono text-foreground/80 leading-relaxed break-all">{st.slice(3)}</span>
+                    <span className="font-mono text-foreground/80 leading-relaxed break-all">{st.replace(/^\d+\.\s*/, '')}</span>
                   </div>
                 ))}
               </div>
@@ -672,6 +677,9 @@ export default function EdukasiPage() {
       {/* Article Modal */}
       {selectedArticle && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={selectedArticle.judul}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) setSelectedArticle(null); }}
         >
@@ -680,7 +688,7 @@ export default function EdukasiPage() {
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{selectedArticle.icon}</span>
                 <div className="flex flex-col gap-1">
-                  <span className="text-[9px] bg-sifa-green-100 dark:bg-sifa-green-900/40 text-sifa-green-800 dark:text-sifa-green-200 px-2 py-0.5 rounded font-bold uppercase tracking-wide w-fit">
+                  <span className="text-[9px] bg-sifa-green-100 text-sifa-green-800 px-2 py-0.5 rounded font-bold uppercase tracking-wide w-fit">
                     {selectedArticle.kategori}
                   </span>
                   <h3 className="font-heading text-xl font-bold text-sifa-green-900 dark:text-sifa-green-100 leading-tight">
@@ -690,6 +698,7 @@ export default function EdukasiPage() {
               </div>
               <button
                 onClick={() => setSelectedArticle(null)}
+                aria-label="Tutup artikel"
                 className="text-foreground/40 hover:text-foreground transition-colors p-1 hover:bg-foreground/10 rounded-lg"
               >
                 ✕
