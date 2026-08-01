@@ -3,9 +3,6 @@
 **بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ**
 
 <br/>
-
-<img src="apps/web/src/app/icon.svg" width="112" alt="Logo SIFA — kubus Ka'bah dan bulan sabit emas di atas hijau tua"/>
-
 </div>
 
 # 🕌 SIFA — Sistem Informasi Falak Terintegrasi
