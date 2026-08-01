@@ -120,7 +120,7 @@ export default function KiblatPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-2xl mx-auto py-4">
+    <div className="flex flex-col gap-8 max-w-4xl mx-auto py-4">
       {/* Header Halaman */}
       <div className="text-center md:text-left flex flex-col gap-2">
         <h1 className="font-heading text-3xl font-bold text-sifa-green-900 dark:text-sifa-green-100">
@@ -165,9 +165,11 @@ export default function KiblatPage() {
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-foreground/50">Lintang (Latitude)</label>
+                <label htmlFor="kiblat-lat" className="text-xs font-bold uppercase tracking-wider text-foreground/50">Lintang (Latitude)</label>
                 <input
+                  id="kiblat-lat"
                   type="text"
+                  inputMode="decimal"
                   value={latInput}
                   onChange={(e) => setLatInput(e.target.value)}
                   placeholder="Contoh: -5.182089"
@@ -176,9 +178,11 @@ export default function KiblatPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-foreground/50">Bujur (Longitude)</label>
+                <label htmlFor="kiblat-lng" className="text-xs font-bold uppercase tracking-wider text-foreground/50">Bujur (Longitude)</label>
                 <input
+                  id="kiblat-lng"
                   type="text"
+                  inputMode="decimal"
                   value={lngInput}
                   onChange={(e) => setLngInput(e.target.value)}
                   placeholder="Contoh: 119.441200"
@@ -228,7 +232,7 @@ export default function KiblatPage() {
 
         {/* Compass Visual Representation */}
         <div className="md:col-span-6 flex justify-center order-1 md:order-2">
-          {result && (
+          {result ? (
             <Card className="w-full flex flex-col items-center p-6 gap-6">
               <KiblatCompass
                 azimuth={result.azimuthKiblat.decimal}
@@ -244,10 +248,15 @@ export default function KiblatPage() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-foreground/40 uppercase">Azimuth Sejati</span>
-                  <span className="font-heading text-lg font-bold text-sifa-gold-500">{result.azimuthKiblat.dms}</span>
+                  <span className="font-heading text-lg font-bold text-sifa-gold-600 dark:text-sifa-gold-500">{result.azimuthKiblat.dms}</span>
                   <span className="text-xs text-foreground/50">({result.azimuthKiblat.decimal.toFixed(2)}°)</span>
                 </div>
               </div>
+            </Card>
+          ) : (
+            <Card className="w-full flex flex-col items-center justify-center p-6 gap-3 min-h-[280px] text-center">
+              <div className="w-8 h-8 border-4 border-sifa-green-200 border-t-sifa-green-600 rounded-full animate-spin" />
+              <span className="text-xs text-foreground/50">Menyiapkan kompas kiblat…</span>
             </Card>
           )}
         </div>
@@ -269,7 +278,7 @@ export default function KiblatPage() {
           {showFormula && (
             <div className="flex flex-col gap-5 text-sm leading-relaxed border-t border-card-border/60 pt-4">
               {/* Parameter Summary */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="bg-sifa-green-50 dark:bg-sifa-green-900/20 rounded-xl p-3 border border-sifa-green-200 dark:border-sifa-green-900/40">
                   <div className="text-[10px] font-bold text-sifa-green-700 dark:text-sifa-green-400 uppercase tracking-wide mb-1.5">Koordinat Ka&apos;bah (Tetap)</div>
                   <div className="font-mono text-xs space-y-1">

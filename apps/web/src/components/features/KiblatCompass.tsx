@@ -111,18 +111,18 @@ export default function KiblatCompass({ azimuth, sudutAQ, kuadran }: KiblatCompa
       {showPermissionBtn && !isSensorAvailable && (
         <button
           onClick={requestSensorPermission}
-          className="text-xs font-bold bg-sifa-gold-500 text-sifa-green-900 px-4 py-2 rounded-xl shadow hover:bg-sifa-gold-600 transition-colors animate-bounce"
+          className="text-xs font-bold bg-sifa-gold-500 text-sifa-green-950 px-4 py-2 rounded-xl shadow hover:bg-sifa-gold-600 transition-colors animate-bounce"
         >
           📳 Aktifkan Kompas HP (iOS Safari)
         </button>
       )}
 
       {/* Container Kompas */}
-      <div className="relative w-72 h-72 flex items-center justify-center bg-card-bg border border-card-border rounded-full shadow-lg shadow-sifa-green-900/5 select-none">
+      <div className="relative w-60 h-60 sm:w-72 sm:h-72 flex items-center justify-center bg-card-bg border border-card-border rounded-full shadow-lg shadow-sifa-green-900/5 select-none">
         
         {/* Ornamen Piringan Kompas */}
         <div
-          className="absolute w-64 h-64 rounded-full border border-card-border/50 flex items-center justify-center transition-transform duration-100 ease-out"
+          className="absolute w-52 h-52 sm:w-64 sm:h-64 rounded-full border border-card-border/50 flex items-center justify-center transition-transform duration-100 ease-out"
           style={{ transform: `rotate(${currentRotation}deg)` }}
         >
           {/* Arah Mata Angin */}
@@ -151,14 +151,14 @@ export default function KiblatCompass({ azimuth, sudutAQ, kuadran }: KiblatCompa
             style={{ transform: `rotate(${qiblaAngle}deg)` }}
           >
             {/* Jarum Kiblat */}
-            <div className="relative w-2.5 h-28 mt-4 flex flex-col items-center">
+            <div className="relative w-2.5 h-[88px] sm:h-28 mt-4 flex flex-col items-center">
               {/* Panah Kepala */}
-              <div className={`w-0.5 h-[100px] absolute top-4 ${isAligned ? 'bg-emerald-500' : 'bg-sifa-gold-500'} rounded-full`} />
+              <div className={`w-0.5 h-[76px] sm:h-[100px] absolute top-4 ${isAligned ? 'bg-emerald-500' : 'bg-sifa-gold-500'} rounded-full`} />
               <div className={`w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[18px] transition-colors duration-150 ${isAligned ? 'border-b-emerald-500' : 'border-b-sifa-gold-500'} filter drop-shadow-[0_2px_4px_rgba(227,167,43,0.3)]`} />
               {/* Batang Jarum */}
               <div className={`w-1 flex-1 transition-colors duration-150 ${isAligned ? 'bg-emerald-500' : 'bg-sifa-gold-500'} rounded-b-full opacity-90`} />
               {/* Label K (Ka'bah) */}
-              <span className={`absolute -top-6 font-heading font-bold text-xs transition-colors duration-150 ${isAligned ? 'bg-emerald-500 text-white' : 'bg-sifa-gold-500 text-sifa-green-900'} px-1.5 py-0.5 rounded shadow`}>
+              <span className={`absolute -top-6 font-heading font-bold text-xs transition-colors duration-150 ${isAligned ? 'bg-emerald-500 text-white' : 'bg-sifa-gold-500 text-sifa-green-950'} px-1.5 py-0.5 rounded shadow`}>
                 KIBLAT
               </span>
             </div>
@@ -184,7 +184,7 @@ export default function KiblatCompass({ azimuth, sudutAQ, kuadran }: KiblatCompa
             <p className="text-xs text-foreground/50 bg-foreground/5 px-4 py-2 rounded-xl inline-block max-w-xs leading-relaxed">
               Sensor kompas tidak aktif. Putar slider di bawah untuk mensimulasikan arah hadap HP Anda:
             </p>
-            <div className="flex items-center gap-3 w-64">
+            <div className="flex items-center gap-3 w-full max-w-64">
               <span className="text-xs font-bold text-foreground/50">0°</span>
               <input
                 type="range"
@@ -200,7 +200,7 @@ export default function KiblatCompass({ azimuth, sudutAQ, kuadran }: KiblatCompa
         )}
 
         {/* Panel Informasi Detil Derajat */}
-        <div className="bg-foreground/[0.02] border border-card-border/60 p-3 rounded-2xl flex flex-col gap-1.5 w-64 text-left text-xs font-mono">
+        <div className="bg-foreground/[0.02] border border-card-border/60 p-3 rounded-2xl flex flex-col gap-1.5 w-full max-w-64 text-left text-xs font-mono">
           <div className="flex justify-between">
             <span className="text-foreground/50">Hadap HP:</span>
             <span className="font-bold text-foreground/80">{activeFacing.toFixed(0)}° (Azimuth)</span>
