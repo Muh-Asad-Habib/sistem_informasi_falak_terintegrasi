@@ -29,6 +29,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# dokumentasi internal (hanya untuk pengembangan lokal, tidak ikut ke repo)
+AGENTS.md
+CLAUDE.md
+MEMORY.md
+REVIEW-CHECKLIST.md
+agent_docs/
+specs/
+
 # temp files
 _modul_text.txt
 
