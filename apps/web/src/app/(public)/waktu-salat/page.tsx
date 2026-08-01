@@ -217,18 +217,22 @@ export default function WaktuSalatPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Lintang</label>
+                  <label htmlFor="ws-lat" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Lintang</label>
                   <input
+                    id="ws-lat"
                     type="text"
+                    inputMode="decimal"
                     value={latInput}
                     onChange={(e) => setLatInput(e.target.value)}
                     className="px-3 py-2 rounded-xl border border-card-border bg-background text-xs font-semibold"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Bujur</label>
+                  <label htmlFor="ws-lng" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Bujur</label>
                   <input
+                    id="ws-lng"
                     type="text"
+                    inputMode="decimal"
                     value={lngInput}
                     onChange={(e) => setLngInput(e.target.value)}
                     className="px-3 py-2 rounded-xl border border-card-border bg-background text-xs font-semibold"
@@ -238,17 +242,20 @@ export default function WaktuSalatPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Tinggi (mdpl)</label>
+                  <label htmlFor="ws-elev" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Tinggi (mdpl)</label>
                   <input
+                    id="ws-elev"
                     type="text"
+                    inputMode="decimal"
                     value={elevationInput}
                     onChange={(e) => setElevationInput(e.target.value)}
                     className="px-3 py-2 rounded-xl border border-card-border bg-background text-xs font-semibold"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Timezone (GMT+)</label>
+                  <label htmlFor="ws-tz" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Timezone (GMT+)</label>
                   <select
+                    id="ws-tz"
                     value={timezoneInput}
                     onChange={(e) => setTimezoneInput(e.target.value)}
                     className="px-3 py-2 rounded-xl border border-card-border bg-background text-xs font-semibold focus:outline-none"
@@ -273,10 +280,11 @@ export default function WaktuSalatPage() {
               {/* Ikhtiyat Slider */}
               <div className="flex flex-col gap-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Ikhtiyat (Kehati-hatian)</label>
+                  <label htmlFor="ws-ikhtiyat" className="text-[10px] font-bold uppercase tracking-wider text-foreground/50">Ikhtiyat (Kehati-hatian)</label>
                   <span className="text-xs font-bold text-sifa-green-900 dark:text-sifa-green-500">+{ikhtiyat} menit</span>
                 </div>
                 <input
+                  id="ws-ikhtiyat"
                   type="range"
                   min="0"
                   max="5"
@@ -287,7 +295,7 @@ export default function WaktuSalatPage() {
               </div>
 
               {errorMsg && (
-                <p className="text-xs text-red-600 bg-red-50 p-2 rounded-lg border border-red-200">
+                <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/20 px-3 py-2 rounded-lg border border-red-200 dark:border-red-950/30">
                   {errorMsg}
                 </p>
               )}

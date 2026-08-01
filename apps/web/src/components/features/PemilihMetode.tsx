@@ -61,7 +61,7 @@ export default function PemilihMetode({
           htmlFor={`${idPrefix}-metode`}
           className="text-[10px] font-bold uppercase tracking-wider text-foreground/50"
         >
-          Metode perhitungan    
+          Metode perhitungan
         </label>
         <select
           id={`${idPrefix}-metode`}
