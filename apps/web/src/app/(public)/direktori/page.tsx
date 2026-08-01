@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import PemilihMetode from '@/components/features/PemilihMetode';
@@ -114,7 +113,8 @@ export default function DirektoriPage() {
   }, [radius]);
 
   const handleUseUnismuh = () => {
-    const loc = { lat: -5.182778, lng: 119.441083 };
+    // Koordinat markaz yang sama dengan Beranda, Kiblat, dan Waktu Salat
+    const loc = { lat: -5.182089, lng: 119.441200 };
     setUserLoc(loc);
     setGpsError(null);
     loadMosques(loc.lat, loc.lng, radius);
@@ -222,7 +222,7 @@ export default function DirektoriPage() {
             <span className="font-heading text-lg font-bold text-sifa-green-900 dark:text-sifa-green-100">Mendeteksi Lokasi GPS Anda...</span>
             <span className="text-xs text-foreground/50 max-w-sm">Aktifkan izin lokasi di browser untuk mendapatkan masjid terdekat secara otomatis</span>
           </div>
-          <Button variant="secondary" size="sm" onClick={handleUseUnismuh} className="text-xs font-bold px-4 py-2 border border-sifa-green-900/20 text-sifa-green-900 dark:text-sifa-green-100">
+          <Button variant="outline" size="sm" onClick={handleUseUnismuh} className="text-xs font-bold px-4 py-2">
             Gunakan Lokasi Unismuh (Default)
           </Button>
         </Card>
@@ -399,9 +399,9 @@ export default function DirektoriPage() {
                         <span aria-hidden="true">{m.jenis === 'masjid' ? '🕌' : '🛐'}</span> {m.nama}
                       </h3>
                     </div>
-                    <Badge variant="green" className="bg-sifa-green-900 text-white font-extrabold text-[9px] whitespace-nowrap shrink-0">
+                    <span className="inline-flex items-center rounded-full bg-sifa-green-900 text-white font-extrabold text-[9px] whitespace-nowrap shrink-0 px-2.5 py-0.5 select-none">
                       📍 {formatDist(m.jarakKm)}
-                    </Badge>
+                    </span>
                   </div>
 
                   <p className="text-xs text-foreground/65 leading-relaxed">
@@ -464,39 +464,28 @@ export default function DirektoriPage() {
 
                 {/* Action buttons */}
                 <div className="flex flex-wrap gap-2 pt-2 border-t border-card-border/30">
-                  <Link href={`/kiblat?lat=${m.lat}&lng=${m.lng}`}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="text-[10px] font-bold py-1.5 px-3 border border-sifa-green-900/20 text-sifa-green-900 dark:text-sifa-green-100 hover:bg-sifa-green-900 hover:text-white transition-colors"
-                    >
-                      Kompas Kiblat
-                    </Button>
+                  <Link
+                    href={`/kiblat?lat=${m.lat}&lng=${m.lng}`}
+                    className="inline-flex items-center text-[10px] font-bold py-1.5 px-3 rounded-xl border border-sifa-green-600/30 text-sifa-green-700 dark:text-sifa-green-400 hover:bg-sifa-green-900 hover:text-white hover:border-sifa-green-900 transition-colors active:scale-[0.98] select-none"
+                  >
+                    Kompas Kiblat
                   </Link>
-                  <Link href={`/waktu-salat?lat=${m.lat}&lng=${m.lng}`}>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="text-[10px] font-bold py-1.5 px-3 border border-sifa-gold-500/20 text-sifa-gold-600 hover:bg-sifa-gold-500 hover:text-white transition-colors"
-                    >
-                      Jadwal Salat
-                    </Button>
+                  <Link
+                    href={`/waktu-salat?lat=${m.lat}&lng=${m.lng}`}
+                    className="inline-flex items-center text-[10px] font-bold py-1.5 px-3 rounded-xl border border-sifa-gold-500/40 text-sifa-gold-600 dark:text-sifa-gold-500 hover:bg-sifa-gold-500 hover:text-sifa-green-950 transition-colors active:scale-[0.98] select-none"
+                  >
+                    Jadwal Salat
                   </Link>
                   <a
                     href={`https://www.google.com/maps/dir/?api=1&destination=${m.lat},${m.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold py-1.5 px-3 rounded-xl border border-blue-500/30 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-colors active:scale-[0.98] select-none"
                   >
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="text-[10px] font-bold py-1.5 px-3 border border-blue-500/20 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-colors flex items-center gap-1"
-                    >
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-                      </svg>
-                      Google Maps
-                    </Button>
+                    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                    </svg>
+                    Google Maps
                   </a>
                 </div>
               </Card>

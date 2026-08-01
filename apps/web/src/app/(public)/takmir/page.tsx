@@ -454,9 +454,8 @@ export default function TakmirPage() {
                         </span>
 
                         <div className="flex gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
+                          <button
+                            type="button"
                             onClick={() => {
                               setSelectedCertificate(m);
                               setTimeout(() => {
@@ -464,10 +463,10 @@ export default function TakmirPage() {
                                 setSelectedCertificate(null);
                               }, 100);
                             }}
-                            className="text-[9px] font-bold py-1 px-2 border border-sifa-gold-500/20 text-sifa-gold-600"
+                            className="text-[9px] font-bold py-1 px-2 rounded-lg border border-sifa-gold-500/40 text-sifa-gold-600 dark:text-sifa-gold-500 hover:bg-sifa-gold-500 hover:text-sifa-green-950 transition-colors active:scale-[0.98] select-none"
                           >
                             Cetak Laporan
-                          </Button>
+                          </button>
                           <Button
                             variant="ghost"
                             size="sm"

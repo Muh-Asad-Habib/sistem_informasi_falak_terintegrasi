@@ -345,7 +345,7 @@ export default function AppNav() {
       {sheetTerbuka && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true" aria-label="Menu lainnya">
           <div
-            className="absolute inset-0 bg-sifa-green-900/40 backdrop-blur-[2px] sifa-fade-in"
+            className="absolute inset-0 bg-sifa-green-950/50 backdrop-blur-[2px] sifa-fade-in"
             onClick={tutupSemua}
             aria-hidden="true"
           />
