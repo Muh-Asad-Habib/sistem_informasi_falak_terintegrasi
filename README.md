@@ -1,3 +1,13 @@
+<div align="center">
+
+**بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ**
+
+<br/>
+
+<img src="apps/web/src/app/icon.svg" width="112" alt="Logo SIFA — kubus Ka'bah dan bulan sabit emas di atas hijau tua"/>
+
+</div>
+
 # 🕌 SIFA — Sistem Informasi Falak Terintegrasi
 
 <div align="center">
@@ -33,15 +43,19 @@ Hitung arah kiblat sejati berbasis **Trigonometri Segitiga Bola** (great circle)
 ### 📅 Jadwal Waktu Salat
 Hisab jadwal salat berbasis posisi **astronomis Matahari** — Deklinasi (δ), Equation of Time (e), Sudut Waktu (t).
 - Jadwal harian + 30 hari ke depan
-- Dua preset parameter: Muhammadiyah (Modul AIK IV) & Kemenag RI — parameter tiap preset ditampilkan apa adanya beserta sumbernya. Untuk wilayah Indonesia keduanya memakai h Subuh −20° dan h Isya −18°, jadi hasilnya memang berdekatan; SIFA tidak membuat perbedaan semu.
+- **10 kriteria hisab** dapat dipilih: Muhammadiyah, Kemenag RI, MABIMS, NU (LF PBNU), MWL, ISNA, Umm al-Qura, Egyptian GAS, Karachi, Singapura (MUIS) — parameter tiap kriteria ditampilkan apa adanya beserta sumbernya
+- Pilihan **mazhab awal Asar**: Syafi'i/Maliki/Hanbali (bayangan 1×) atau Hanafi (bayangan 2×)
+- Tabel **Perbandingan Kriteria** berdampingan dengan selisih menit terhadap metode acuan
 - Ikhtiyat adjustable (0–5 menit)
 - Countdown realtime menuju waktu salat berikutnya
 - Panel transparansi hisab: tabel ketinggian h **hasil kalkulasi sebenarnya**, δ/e/KWB hari itu, formula cosinus, dan penjelasan ikhtiyat
 
 ### 🕌 Direktori & Layar Masjid
 - Direktori masjid terdekat **real-time** dari OpenStreetMap (Overpass API, tanpa API key)
-- Filter radius 1/3/5/10 km, ranking terdekat, cache sessionStorage 5 menit
-- Halaman **Layar Masjid** (mode TV kontras tinggi): jam, jadwal, dan hitung mundur adzan
+- **Peta interaktif** MapLibre + ubin OSM (marker masjid/musala/pengguna) dengan cadangan Google Maps embed untuk perangkat tanpa WebGL
+- Filter radius 1/3/5/10 km, pencarian nama/alamat, ranking terdekat, cache dengan failover multi-server
+- Jadwal salat **per koordinat masjid** dengan metode hisab yang bisa dipilih
+- Halaman **Layar Masjid** (mode TV kontras tinggi): jam, jadwal, hitung mundur adzan — **otomatis lanskap di HP portrait**, tombol layar penuh + orientation lock, ukuran teks proporsional semua perangkat (`clamp` + `vmin`)
 - Arah kiblat tiap masjid selalu **dihitung ulang** dari koordinat via `hisab-core` — tidak ada angka statis yang bisa basi
 - Atribusi: © OpenStreetMap contributors
 
@@ -53,11 +67,11 @@ Panel bagi pengurus masjid untuk memeriksa arah saf.
 - Data hanya tersimpan di browser pengguna, tidak dikirim ke server
 
 ### 🌙 Kalender Masehi–Hijriah
-Grid kalender bulanan dengan navigasi **bulan sebelumnya dan sesudahnya**, dual-date (Masehi + Hijriah tabular).
+Grid kalender bulanan **tampil penuh di semua ukuran layar** (tanpa geser), dual-date (Masehi + Hijriah tabular).
 - Navigasi ‹ Prev / Next › + tombol "Bulan Ini"
 - Highlight hari besar Islam (Ramadan, Idulfitri, Iduladha, 1 Muharram)
-- Tab **Kriteria Awal Bulan**: perbandingan **Wujudul Hilal** vs **KHGT** berdampingan
-- Hisab toposentris lengkap: tinggi hilal, elongasi, waktu ijtimak, keputusan otomatis
+- Tab **Kriteria Awal Bulan**: **5 kriteria berdampingan** — Wujudul Hilal, KHGT (Muhammadiyah), MABIMS baru & lama (Kemenag RI), Istanbul 2016 — bisa dicentang mana yang ditampilkan
+- Hisab toposentris lengkap: tinggi hilal, elongasi, umur bulan, waktu ijtimak, panel "cara perhitungan" per kriteria
 
 ### 📖 Edukasi Ilmu Falak
 Modul literasi falak interaktif dengan konten kaya untuk mahasiswa.
@@ -83,6 +97,16 @@ Temukan masjid di sekitar Anda secara **real-time** tanpa API key berbayar.
 Mode tampilan full-screen kontras tinggi untuk layar TV/proyektor masjid.
 - Jam digital real-time + jadwal salat besar
 - Countdown menuju waktu adzan/iqamah berikutnya
+- **Otomatis lanskap** saat dibuka dari HP portrait (rotasi CSS) + tombol Layar Penuh dengan orientation lock
+
+---
+
+## 🎨 UI/UX
+
+- **Tema terang & gelap otomatis** mengikuti preferensi sistem — seluruh token warna (hijau/emas SIFA) punya varian dark dengan kontras terjaga
+- **Responsif penuh**: HP (320px+), tablet, laptop, hingga layar TV — bottom navigation + sheet "Lainnya" di mobile, header nav di desktop
+- **Ikon aplikasi & favicon** satu identitas dengan logo header (kubus Ka'bah + bulan sabit emas) — konsisten di tab browser, PWA, dan homescreen
+- **Aksesibilitas**: label form ber-`id`, semantik dialog pada modal, skip-link, `aria-current` navigasi, dukungan `prefers-reduced-motion`
 
 ---
 
@@ -183,8 +207,9 @@ npx cloudflared tunnel --url http://localhost:3000
 |---|---|
 | Framework Web | Next.js 14 (App Router) |
 | Bahasa | TypeScript (strict mode) |
-| Styling | Tailwind CSS + custom design tokens |
+| Styling | Tailwind CSS + design tokens (tema terang & gelap otomatis) |
 | Font | Fraunces (heading) · Plus Jakarta Sans (body) |
+| Peta | MapLibre GL JS + ubin OpenStreetMap (fallback Google Maps embed) |
 | Hisab Engine | hisab-core (pure TypeScript, zero dependency) |
 | Data Masjid | OpenStreetMap via Overpass API (real-time, gratis) |
 | Testing | Vitest |
@@ -221,6 +246,5 @@ npx cloudflared tunnel --url http://localhost:3000
 
 Dibuat dengan ❤️ untuk kemakmuran masjid dan dakwah falakiyah Muhammadiyah
 
-**بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ**
 
 </div>
