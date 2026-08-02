@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <linearGradient id="bgH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#221c4f"/>
+      <stop offset="70%" stop-color="#2c2766"/>
+      <stop offset="100%" stop-color="#332c74"/>
+    </linearGradient>
+    <pattern id="dotsH" width="42" height="42" patternUnits="userSpaceOnUse">
+      <circle cx="21" cy="21" r="1.1" fill="#b9b4e6" opacity="0.16"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="480" fill="url(#bgH)"/>
+  <rect width="1200" height="480" fill="url(#dotsH)"/>
+
+  <!-- Bintang -->
+  <circle cx="120" cy="70" r="2.2" fill="#e6e2ff" opacity="0.9"/>
+  <circle cx="770" cy="118" r="1.8" fill="#e6e2ff" opacity="0.8"/>
+  <circle cx="905" cy="88" r="1.6" fill="#e6e2ff" opacity="0.7"/>
+  <circle cx="232" cy="132" r="1.4" fill="#e6e2ff" opacity="0.6"/>
+
+  <!-- Ornamen bintang 8 -->
+  <g transform="translate(1045,72)" fill="none" stroke="#7a74b8" stroke-width="1.4" opacity="0.6">
+    <rect x="-40" y="-40" width="80" height="80" transform="rotate(15)"/>
+    <rect x="-40" y="-40" width="80" height="80" transform="rotate(60)"/>
+  </g>
+
+  <!-- Legenda kriteria -->
+  <g>
+    <rect x="600" y="138" width="26" height="4" rx="2" fill="#e9c25f"/>
+    <text x="643" y="150" font-size="19" font-weight="bold" fill="#f3e3b8">KHGT / Imkan Rukyat MABIMS</text>
+    <text x="643" y="178" font-size="16" fill="#cfcbea">h &#8805; 3&#176;, elongasi &#8805; 6,4&#176;</text>
+
+    <rect x="600" y="222" width="26" height="4" rx="2" fill="#a7a3c4"/>
+    <text x="643" y="234" font-size="19" font-weight="bold" fill="#e8e4ff">Wujudul Hilal</text>
+    <text x="643" y="262" font-size="16" fill="#cfcbea">h &gt; 0&#176; &#8212; hilal di atas ufuk</text>
+  </g>
+
+  <!-- Garis ambang kriteria (dashed) -->
+  <line x1="100" y1="300" x2="980" y2="300" stroke="#b9b4d8" stroke-width="1.6" stroke-dasharray="7 6" opacity="0.75"/>
+
+  <!-- Ufuk -->
+  <path d="M100,390 L980,390" stroke="#c5c1e0" stroke-width="1.8" opacity="0.85"/>
+
+  <!-- Matahari terbenam -->
+  <path d="M160,390 A48,48 0 0 1 256,390 Z" fill="#e8935a"/>
+
+  <!-- Hilal -->
+  <g transform="translate(338,342)">
+    <circle cx="0" cy="0" r="24" fill="#2b2560"/>
+    <path d="M-4,-23.6 A24,24 0 1 0 -4,23.6 A19,19 0 1 1 -4,-23.6 Z" fill="#f2ecc9"/>
+  </g>
+  <!-- Garis tinggi h -->
+  <line x1="345" y1="366" x2="345" y2="390" stroke="#e8e4ff" stroke-width="1.4" stroke-dasharray="3 3"/>
+  <text x="356" y="384" font-size="15" font-weight="bold" fill="#f2ecc9">h</text>
+
+  <!-- Siluet tanah -->
+  <path d="M0,410 C 180,398 420,420 640,412 C 840,405 1040,418 1200,408 L1200,480 L0,480 Z" fill="#161233" opacity="0.9"/>
+
+  <text x="142" y="440" font-size="16" fill="#cfcbea">Hilal di antara dua ambang kriteria</text>
+</svg>

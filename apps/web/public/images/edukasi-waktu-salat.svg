@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <linearGradient id="bgW" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#123528"/>
+      <stop offset="100%" stop-color="#0d2a20"/>
+    </linearGradient>
+    <pattern id="dotsW" width="42" height="42" patternUnits="userSpaceOnUse">
+      <circle cx="21" cy="21" r="1.1" fill="#9fd9b8" opacity="0.12"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="480" fill="url(#bgW)"/>
+  <rect width="1200" height="480" fill="url(#dotsW)"/>
+
+  <!-- Ornamen bintang 8 -->
+  <g transform="translate(1045,72)" fill="none" stroke="#5f8f74" stroke-width="1.4" opacity="0.55">
+    <rect x="-40" y="-40" width="80" height="80" transform="rotate(15)"/>
+    <rect x="-40" y="-40" width="80" height="80" transform="rotate(60)"/>
+  </g>
+
+  <!-- Diagram kiri: deklinasi matahari -->
+  <circle cx="360" cy="222" r="162" fill="none" stroke="#8fd6a9" stroke-width="2"/>
+  <!-- Ekuator langit -->
+  <line x1="198" y1="222" x2="522" y2="222" stroke="#bcd2c2" stroke-width="1.6" opacity="0.8"/>
+  <text x="203" y="245" font-size="16" fill="#cfe4d4">Ekuator langit</text>
+  <!-- Ekliptika (dashed di bawah horizon kiri) -->
+  <line x1="360" y1="222" x2="228" y2="282" stroke="#bcd2c2" stroke-width="1.2" stroke-dasharray="5 5" opacity="0.6"/>
+  <!-- Garis ke Matahari -->
+  <line x1="360" y1="222" x2="520" y2="168" stroke="#e9c27a" stroke-width="2.4"/>
+  <circle cx="520" cy="168" r="11" fill="#f0c66f"/>
+  <text x="540" y="150" font-size="21" font-weight="bold" fill="#f3e3c3">Matahari</text>
+  <text x="500" y="160" text-anchor="end" font-size="15" fill="#b9ccb4" opacity="0.9">Ekliptika</text>
+  <!-- Busur & label delta -->
+  <path d="M420,222 A62,62 0 0 0 416,203" fill="none" stroke="#e8dcc2" stroke-width="1.4"/>
+  <text x="408" y="210" text-anchor="middle" font-size="17" font-weight="bold" fill="#f3e3c3">&#948;</text>
+  <circle cx="360" cy="222" r="3.2" fill="#e8dcc2"/>
+  <text x="360" y="412" text-anchor="middle" font-size="17" fill="#cfe4d4">&#948; = deklinasi matahari</text>
+
+  <!-- Diagram kanan: sudut waktu -->
+  <circle cx="890" cy="240" r="110" fill="none" stroke="#8fd6a9" stroke-width="1.8"/>
+  <line x1="780" y1="240" x2="1000" y2="240" stroke="#a9c4af" stroke-width="1" opacity="0.55"/>
+  <line x1="890" y1="130" x2="890" y2="350" stroke="#a9c4af" stroke-width="1" opacity="0.55"/>
+  <text x="890" y="118" text-anchor="middle" font-size="16" fill="#cfe4d4">Meridian</text>
+  <!-- Panah sudut waktu t -->
+  <line x1="890" y1="240" x2="952" y2="152" stroke="#e9c27a" stroke-width="2.6"/>
+  <polygon points="959,142 943.5,152.5 954.5,161" fill="#e9c27a"/>
+  <text x="925" y="182" font-size="18" font-weight="bold" fill="#f3e3c3">t</text>
+  <text x="890" y="390" text-anchor="middle" font-size="17" fill="#cfe4d4">t = sudut waktu</text>
+
+  <!-- Kurva equation of time -->
+  <path d="M148,442 C 210,428 268,424 320,436 C 380,450 440,454 500,444 C 560,434 620,424 690,430 C 760,436 830,452 900,450 C 970,448 1020,434 1052,438" fill="none" stroke="#c9d8c9" stroke-width="1.8" opacity="0.75"/>
+  <text x="148" y="466" font-size="15" fill="#b9ccb4">Equation of time (menit) sepanjang tahun</text>
+</svg>

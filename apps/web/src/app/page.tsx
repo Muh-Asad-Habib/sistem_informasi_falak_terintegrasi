@@ -197,7 +197,7 @@ export default function Home() {
         {/* Right side - Mosque night banner image (mockup mosque) */}
         <div className="w-full md:w-80 h-48 md:h-56 rounded-2xl overflow-hidden shadow-xl border border-card-border/50 relative group">
           <Image 
-            src="/images/mosque_night.jpg" 
+            src="/images/markaz-unismuh.jpg" 
             alt="Mosque at Night banner image" 
             width={400}
             height={300}
@@ -465,26 +465,36 @@ export default function Home() {
               title: 'Arah Kiblat dengan Trigonometri Segitiga Bola',
               desc: 'Langkah hisab dari selisih bujur hingga azimuth UTSB.',
               bgClass: 'from-amber-950 to-orange-950',
+              img: '/images/edukasi-kiblat.svg',
             },
             {
               cat: 'Waktu Salat',
               title: 'Deklinasi, Equation of Time, dan Sudut Waktu',
               desc: 'Cara posisi Matahari menentukan awal tiap waktu salat.',
               bgClass: 'from-emerald-950 to-teal-900',
+              img: '/images/edukasi-waktu-salat.svg',
             },
             {
               cat: 'Hijriah',
               title: 'Wujudul Hilal dan KHGT Berdampingan',
               desc: 'Dua kriteria awal bulan Muhammadiyah beserta parameternya.',
               bgClass: 'from-blue-950 to-indigo-900',
+              img: '/images/edukasi-hijriah.svg',
             },
           ].map((art, idx) => (
             <Link href="/edukasi" key={idx} className="group">
               <Card className="overflow-hidden h-full flex flex-col border-card-border/40 hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
-                {/* Visual placeholder mimicking image with gradient */}
+                {/* Gambar modul edukasi */}
                 <div className={`h-32 bg-gradient-to-br ${art.bgClass} p-4 flex flex-col justify-between relative`}>
+                  <Image
+                    src={art.img}
+                    alt={art.title}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                  />
                   <div className="absolute inset-0 bg-black/10 mix-blend-overlay" />
-                  <span className="inline-flex items-center rounded-full self-start text-[8px] uppercase tracking-wider font-extrabold bg-white/20 text-white border border-white/20 px-2.5 py-0.5 select-none">
+                  <span className="relative z-10 inline-flex items-center rounded-full self-start text-[8px] uppercase tracking-wider font-extrabold bg-white/20 text-white border border-white/20 px-2.5 py-0.5 select-none">
                     {art.cat}
                   </span>
                   {/* Subtle stars SVG graphic inside */}

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" font-family="Georgia, 'Times New Roman', serif">
+  <defs>
+    <radialGradient id="bgK" cx="32%" cy="45%" r="85%">
+      <stop offset="0%" stop-color="#38180c"/>
+      <stop offset="55%" stop-color="#260f07"/>
+      <stop offset="100%" stop-color="#190803"/>
+    </radialGradient>
+    <pattern id="dotsK" width="42" height="42" patternUnits="userSpaceOnUse">
+      <circle cx="21" cy="21" r="1.1" fill="#c9a06b" opacity="0.14"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="480" fill="url(#bgK)"/>
+  <rect width="1200" height="480" fill="url(#dotsK)"/>
+
+  <!-- Ornamen bintang 8 (Rub el Hizb) -->
+  <g transform="translate(1045,72)" fill="none" stroke="#8a5a3a" stroke-width="1.4" opacity="0.55">
+    <rect x="-40" y="-40" width="80" height="80" transform="rotate(15)"/>
+    <rect x="-40" y="-40" width="80" height="80" transform="rotate(60)"/>
+  </g>
+
+  <!-- Diagram kiri: segitiga bola -->
+  <circle cx="390" cy="248" r="150" fill="none" stroke="#93d9ab" stroke-width="2"/>
+
+  <!-- Busur lingkaran besar (dashed) Ka'bah - Lokasi lewat dekat kutub -->
+  <path d="M308,90 Q413,48 518,144" fill="none" stroke="#d8c6a8" stroke-width="1.5" stroke-dasharray="4 5" opacity="0.85"/>
+  <text x="397" y="60" text-anchor="middle" font-size="16" fill="#b9a893">Kutub Utara</text>
+
+  <!-- Busur sudut C -->
+  <path d="M362,112 A60,26 0 0 1 435,116" fill="none" stroke="#d8c6a8" stroke-width="1.3" opacity="0.9"/>
+  <text x="401" y="102" text-anchor="middle" font-size="15" fill="#e8dcc2">C</text>
+
+  <!-- Garis ke Ka'bah -->
+  <line x1="390" y1="248" x2="308" y2="90" stroke="#e9c27a" stroke-width="2.5"/>
+  <circle cx="308" cy="90" r="7" fill="#ecc27b"/>
+  <text x="300" y="63" text-anchor="end" font-size="20" font-weight="bold" fill="#f3e3c3">Ka'bah</text>
+
+  <!-- Garis ke Lokasi -->
+  <line x1="390" y1="248" x2="518" y2="144" stroke="#79caa1" stroke-width="2.5"/>
+  <circle cx="518" cy="144" r="7.5" fill="#6fd0a0"/>
+  <text x="545" y="120" font-size="20" font-weight="bold" fill="#bfe9c9">Lokasi</text>
+
+  <circle cx="390" cy="248" r="3.5" fill="#f3e3c3"/>
+
+  <!-- Diagram kanan: dial azimuth UTSB -->
+  <circle cx="920" cy="322" r="100" fill="none" stroke="#93d9ab" stroke-width="1.8"/>
+  <line x1="820" y1="322" x2="1020" y2="322" stroke="#9b8f80" stroke-width="1" opacity="0.5"/>
+  <line x1="920" y1="222" x2="920" y2="422" stroke="#9b8f80" stroke-width="1" opacity="0.5"/>
+  <text x="920" y="212" text-anchor="middle" font-size="15" fill="#b9a893">U</text>
+  <text x="920" y="444" text-anchor="middle" font-size="15" fill="#b9a893">S</text>
+  <text x="800" y="327" text-anchor="middle" font-size="15" fill="#b9a893">B</text>
+  <text x="1040" y="327" text-anchor="middle" font-size="15" fill="#b9a893">T</text>
+
+  <!-- Jarum azimuth kiblat (barat laut) -->
+  <line x1="920" y1="322" x2="848" y2="292.6" stroke="#e9c27a" stroke-width="3"/>
+  <polygon points="835,287 847.3,299.1 852.3,287.1" fill="#e9c27a"/>
+  <text x="877" y="272" font-size="18" font-weight="bold" fill="#f3e3c3">B</text>
+
+  <text x="920" y="452" text-anchor="middle" font-size="19" font-weight="bold" fill="#f3e3c3">U 67&#176;31&#8242;13&#8243; B</text>
+</svg>
