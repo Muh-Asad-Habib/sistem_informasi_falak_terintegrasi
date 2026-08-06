@@ -63,11 +63,11 @@ describe('hitungJadwalSalat — golden test terhadap contoh Modul AIK IV', () =>
     // Override parameter harus mengubah hasil — bukti parameter dipakai, bukan hardcode.
     const subuhLebihDini = hitungJadwalSalat(
       coordinate, tanggal, TZ_WITA, ELEVASI_MDPL, 'Muhammadiyah', 2,
-      { hSubuh: -18 }
+      { hSubuh: -20 }
     );
     expect(subuhLebihDini.subuh).not.toBe(hasil.subuh);
-    // h = -18° tercapai lebih belakangan → Subuh lebih siang daripada h = -20°
-    expect(subuhLebihDini.subuh > hasil.subuh).toBe(true);
+    // h = -20° tercapai lebih dulu → Subuh lebih dini daripada default h = -18°
+    expect(subuhLebihDini.subuh < hasil.subuh).toBe(true);
 
     const isyaBeda = hitungJadwalSalat(
       coordinate, tanggal, TZ_WITA, ELEVASI_MDPL, 'Muhammadiyah', 2,
@@ -203,7 +203,7 @@ describe('preset multi-metode & mazhab Asar', () => {
     }
   });
 
-  it('ISNA (h −15°) memberi Subuh lebih siang & Isya lebih awal daripada Muhammadiyah (h −20°/−18°)', () => {
+  it('ISNA (h −15°) memberi Subuh lebih siang & Isya lebih awal daripada Muhammadiyah (h −18°/−18°)', () => {
     const muh = hitungJadwalSalat(coordinate, tanggal, TZ_WITA, ELEVASI, 'Muhammadiyah', 2);
     const isna = hitungJadwalSalat(coordinate, tanggal, TZ_WITA, ELEVASI, 'ISNA', 2);
 
@@ -248,9 +248,10 @@ describe('preset multi-metode & mazhab Asar', () => {
     expect(acuan.selisihMenit.subuh).toBe(0);
     expect(acuan.selisihMenit.isya).toBe(0);
 
-    // Kemenag memakai ketinggian matahari yang sama → tidak boleh ada beda semu.
+    // Kemenag memakai h Subuh -20° (lebih rendah dari Muhammadiyah -18°) → Subuh lebih dini;
+    // h Isya sama-sama -18° → tidak boleh ada beda semu.
     const kemenag = hasil.find((r) => r.metode === 'Kemenag')!;
-    expect(kemenag.selisihMenit.subuh).toBe(0);
+    expect(kemenag.selisihMenit.subuh).toBeLessThan(0);
     expect(kemenag.selisihMenit.isya).toBe(0);
 
     // ISNA jelas berbeda karena kriterianya memang berbeda.

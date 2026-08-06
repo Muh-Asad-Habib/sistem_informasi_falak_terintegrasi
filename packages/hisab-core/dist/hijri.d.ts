@@ -89,6 +89,29 @@ export declare function getMoonHorizontalCoordinates(jd: number, coord: Coordina
  * Ini menggantikan tabel tanggal hardcoded yang dulu hanya berisi 5 bulan di 1447 H.
  */
 export declare function perkiraanJdIjtimak(hijriMonthIndex: number, hijriYear: number): number;
+/** Hasil konversi tanggal Masehi ke tanggal Hijriah KHGT. */
+export interface TanggalKhgt {
+    day: number;
+    /** 1–12 */
+    month: number;
+    year: number;
+    monthName: string;
+}
+/**
+ * JDN hari sipil pertama sebuah bulan Hijriah menurut kaidah KHGT:
+ * bila di suatu tempat di bumi, saat magrib setempat sebelum pukul 24:00 GMT hari
+ * (UTC) terjadinya ijtimak, elongasi ≥ 8° dan tinggi hilal ≥ 5°, bulan baru mulai
+ * keesokan harinya; bila belum, digenapkan satu hari lagi (istikmal).
+ */
+export declare function jdnAwalBulanKhgt(hijriMonthIndex: number, hijriYear: number): number;
+/**
+ * Konversi tanggal Masehi (kalender lokal pengguna) ke tanggal Hijriah KHGT.
+ *
+ * Perkiraan awal diambil dari lunasi rata-rata, lalu dikoreksi terhadap JDN awal
+ * bulan KHGT sesungguhnya. Tervalidasi terhadap kalender resmi
+ * khgt.muhammadiyah.or.id untuk 1448 H (lihat hijri.test.ts).
+ */
+export declare function konversiMasehiKeKhgt(date: Date): TanggalKhgt;
 /**
  * Mengevaluasi kriteria awal bulan Hijriah — SEMUA kriteria dihitung berdampingan.
  *

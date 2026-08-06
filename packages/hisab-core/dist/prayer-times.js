@@ -31,12 +31,12 @@ export const PARAMETER_METODE = {
         ...DASAR_ASTRONOMIS,
         label: 'Muhammadiyah',
         wilayah: 'Indonesia — Majelis Tarjih dan Tajdid PP Muhammadiyah',
-        // Modul AIK IV Bab III (contoh hisab Unismuh) memakai h Subuh â‰ˆ -20Â° dan h Isya â‰ˆ -18Â°.
-        hSubuh: -20,
+        // Munas Tarjih XXXI menetapkan awal Subuh h = -18° (koreksi dari -20°); Isya tetap -18°.
+        hSubuh: -18,
         hIsya: -18,
-        sumber: 'Modul AIK IV Fakultas Teknik Unismuh Bab III (Waktu Salat) & Pedoman Hisab Muhammadiyah (Majelis Tarjih dan Tajdid, 2009)',
+        sumber: 'Keputusan Munas Tarjih XXXI (ditanfidz SK PP Muhammadiyah, 2021) tentang kriteria awal waktu Subuh h = -18° & Pedoman Hisab Muhammadiyah (Majelis Tarjih dan Tajdid)',
         statusRujukan: 'terverifikasi',
-        catatan: 'TODO: perlu konfirmasi â€” Majelis Tarjih pernah membahas revisi ketinggian awal Subuh menjadi -18Â°. Selama belum ada konfirmasi resmi dari pembimbing AIK, SIFA tetap memakai -20Â° sesuai Modul AIK IV.',
+        catatan: 'Munas Tarjih XXXI merevisi ketinggian matahari awal Subuh dari -20° menjadi -18°. Contoh hisab Modul AIK IV Bab III masih memakai -20° (nilai lama); SIFA mengikuti ketetapan resmi terbaru.',
     },
     Kemenag: {
         ...DASAR_ASTRONOMIS,
@@ -47,7 +47,7 @@ export const PARAMETER_METODE = {
         hIsya: -18,
         sumber: 'Almanak Hisab Rukyat, Kementerian Agama RI',
         statusRujukan: 'terverifikasi',
-        catatan: 'Untuk wilayah Indonesia parameter ketinggian matahari Kemenag RI dan Modul AIK IV sama (-20Â°/-18Â°), sehingga selisih hasil kedua metode hanya muncul bila ikhtiyat/ketinggian tempat diubah. SIFA menampilkannya apa adanya, bukan membuat perbedaan semu.',
+        catatan: 'Kemenag RI tetap memakai -20°/-18° sesuai Almanak Hisab Rukyat (sama dengan contoh Modul AIK IV). Sejak Munas Tarjih XXXI, Subuh Muhammadiyah (-18°) lebih siang daripada Kemenag; SIFA menampilkannya apa adanya.',
     },
     MABIMS: {
         ...DASAR_ASTRONOMIS,
@@ -68,7 +68,7 @@ export const PARAMETER_METODE = {
         hIsya: -18,
         sumber: 'Almanak/Pedoman Hisab Rukyat Lembaga Falakiyah PBNU',
         statusRujukan: 'perlu_konfirmasi',
-        catatan: 'TODO: perlu konfirmasi rujukan cetak LF PBNU. Sepanjang penelusuran, LF PBNU memakai ketinggian matahari yang sama dengan Kemenag (-20Â°/-18Â°) dan mazhab Asar Syafi\u2019i; perbedaan praktis dengan jadwal Muhammadiyah umumnya berasal dari ikhtiyat, bukan dari ketinggian matahari. ' +
+        catatan: 'TODO: perlu konfirmasi rujukan cetak LF PBNU. Sepanjang penelusuran, LF PBNU memakai ketinggian matahari yang sama dengan Kemenag (-20°/-18°) dan mazhab Asar Syafi’i. ' +
             CATATAN_DHUHA_IMSAK,
     },
     MWL: {

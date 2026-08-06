@@ -1,5 +1,5 @@
 import { getSunEclipticLongitude, getMoonCoordinates, getElongation } from './ephemeris.js';
-import { getJulianDate, hitungJadwalSalat } from './prayer-times.js';
+import { getJulianDate, hitungJadwalSalat, hitungEphemerisMatahari } from './prayer-times.js';
 import { HisabError } from './errors.js';
 /** Nama 12 bulan Hijriah sesuai urutan. */
 export const NAMA_BULAN_HIJRIAH = [
@@ -214,6 +214,190 @@ export function perkiraanJdIjtimak(hijriMonthIndex, hijriYear) {
     return JD_NEW_MOON_K0 + k * LUNASI_RATA_RATA;
 }
 /**
+ * Titik cadangan belahan bumi barat untuk pelaporan KHGT bila tidak ada satu pun
+ * titik uji yang magribnya jatuh sebelum 24:00 GMT (kasus sangat jarang).
+ */
+const TITIK_OPTIMUM_KHGT = { lat: 20, lng: -100 };
+/**
+ * JD magrib (matahari terbenam, h = -0,833°) di sebuah titik pada hari sipil UTC
+ * ber-JDN `jdn`. Mengembalikan null di lintang tinggi saat matahari tidak terbenam.
+ */
+function jdMagribDiTitik(jdn, coord) {
+    const jd0 = jdn - 0.5; // 00:00 UTC hari itu
+    let utJam = 12 - coord.lng / 15;
+    for (let i = 0; i < 2; i++) {
+        const { deklinasi, eot } = hitungEphemerisMatahari(new Date((jd0 + utJam / 24 - 2440587.5) * 86400000));
+        const phi = (coord.lat * Math.PI) / 180;
+        const del = (deklinasi * Math.PI) / 180;
+        const h0 = (-0.833 * Math.PI) / 180;
+        const cosH = (Math.sin(h0) - Math.sin(phi) * Math.sin(del)) / (Math.cos(phi) * Math.cos(del));
+        if (cosH < -1 || cosH > 1)
+            return null;
+        const H = (Math.acos(cosH) * 180) / Math.PI;
+        utJam = 12 - eot / 60 - coord.lng / 15 + H / 15;
+    }
+    return jd0 + utJam / 24;
+}
+/** Rujukan syarat fakultatif KHGT: fajar Selandia Baru (Wellington). */
+const TITIK_SELANDIA_BARU = { lat: -41.29, lng: 174.78 };
+/** Titik sampel daratan benua Amerika untuk syarat fakultatif KHGT. */
+const TITIK_DARATAN_AMERIKA = [
+    { lat: 65, lng: -150 }, { lat: 60, lng: -135 }, { lat: 55, lng: -120 },
+    { lat: 50, lng: -105 }, { lat: 45, lng: -115 }, { lat: 45, lng: -95 },
+    { lat: 45, lng: -75 }, { lat: 40, lng: -120 }, { lat: 40, lng: -105 },
+    { lat: 40, lng: -90 }, { lat: 40, lng: -75 }, { lat: 35, lng: -118 },
+    { lat: 35, lng: -100 }, { lat: 35, lng: -85 }, { lat: 30, lng: -110 },
+    { lat: 30, lng: -95 }, { lat: 30, lng: -82 }, { lat: 25, lng: -105 },
+    { lat: 20, lng: -100 }, { lat: 20, lng: -90 }, { lat: 15, lng: -90 },
+    { lat: 10, lng: -85 }, { lat: 10, lng: -75 }, { lat: 5, lng: -75 },
+    { lat: 0, lng: -78 }, { lat: 0, lng: -60 }, { lat: -5, lng: -80 },
+    { lat: -5, lng: -45 }, { lat: -10, lng: -75 }, { lat: -10, lng: -50 },
+    { lat: -15, lng: -70 }, { lat: -15, lng: -48 }, { lat: -20, lng: -65 },
+    { lat: -20, lng: -45 }, { lat: -25, lng: -58 }, { lat: -30, lng: -70 },
+    { lat: -30, lng: -60 }, { lat: -35, lng: -72 }, { lat: -35, lng: -58 },
+    { lat: -40, lng: -73 }, { lat: -45, lng: -72 }, { lat: -50, lng: -73 },
+];
+/**
+ * JD fajar sidik (h matahari = -18°, pagi) di sebuah titik untuk hari sipil lokal
+ * yang JDN-nya `jdn`. Null bila fajar tidak terjadi (lintang tinggi).
+ */
+function jdFajarDiTitik(jdn, coord) {
+    const jd0 = jdn - 0.5;
+    let utJam = 12 - coord.lng / 15;
+    for (let i = 0; i < 2; i++) {
+        const { deklinasi, eot } = hitungEphemerisMatahari(new Date((jd0 + utJam / 24 - 2440587.5) * 86400000));
+        const phi = (coord.lat * Math.PI) / 180;
+        const del = (deklinasi * Math.PI) / 180;
+        const h0 = (-18 * Math.PI) / 180;
+        const cosH = (Math.sin(h0) - Math.sin(phi) * Math.sin(del)) / (Math.cos(phi) * Math.cos(del));
+        if (cosH < -1 || cosH > 1)
+            return null;
+        const H = (Math.acos(cosH) * 180) / Math.PI;
+        utJam = 12 - eot / 60 - coord.lng / 15 - H / 15;
+    }
+    return jd0 + utJam / 24;
+}
+/**
+ * Menguji kaidah matlak global KHGT: apakah di SUATU tempat di bumi, saat magrib
+ * setempat yang jatuh sebelum pukul 24:00 GMT hari konjungsi (dan sesudah ijtimak),
+ * elongasi ≥ 8° dan tinggi hilal ≥ 5° — ditambah syarat fakultatif (imkan di
+ * daratan Amerika + ijtimak sebelum fajar Selandia Baru) bila batas GMT terlewati.
+ *
+ * Bumi dipindai per grid 5° (lintang -55°…55°). Begitu satu titik memenuhi,
+ * pencarian berhenti; bila tidak ada, dilaporkan titik dengan hilal tertinggi.
+ */
+function evaluasiImkanGlobalKhgt(jdConjunction, jdnHariKonjungsi) {
+    const jdBatas = jdnHariKonjungsi + 0.5; // 24:00 GMT hari konjungsi
+    const ambang = PARAMETER_KRITERIA_HIJRIAH.KHGT;
+    let best = null;
+    for (let lat = -55; lat <= 55; lat += 5) {
+        for (let lng = 180; lng >= -180; lng -= 5) {
+            const coord = { lat, lng };
+            const jdMagrib = jdMagribDiTitik(jdnHariKonjungsi, coord);
+            if (jdMagrib === null || jdMagrib > jdBatas || jdMagrib <= jdConjunction)
+                continue;
+            const { altitude } = getMoonHorizontalCoordinates(jdMagrib, coord);
+            const elongasi = getElongation(jdMagrib);
+            const hasil = {
+                terpenuhi: altitude >= ambang.minTinggiHilal && elongasi >= ambang.minElongasi,
+                tinggiHilal: altitude,
+                elongasi,
+                umurBulanJam: (jdMagrib - jdConjunction) * 24,
+            };
+            if (hasil.terpenuhi)
+                return hasil;
+            if (!best || hasil.tinggiHilal > best.tinggiHilal)
+                best = hasil;
+        }
+    }
+    // Syarat fakultatif KHGT: bila imkan pertama baru tercapai setelah 24:00 GMT,
+    // bulan tetap dimulai apabila (a) imkan terjadi di daratan Amerika dan
+    // (b) ijtimak terjadi sebelum fajar di Selandia Baru.
+    const jdFajarNz = jdFajarDiTitik(jdnHariKonjungsi + 1, TITIK_SELANDIA_BARU);
+    if (jdFajarNz !== null && jdConjunction < jdFajarNz) {
+        for (const titik of TITIK_DARATAN_AMERIKA) {
+            const jdMagrib = jdMagribDiTitik(jdnHariKonjungsi, titik);
+            if (jdMagrib === null || jdMagrib <= jdBatas || jdMagrib <= jdConjunction)
+                continue;
+            const { altitude } = getMoonHorizontalCoordinates(jdMagrib, titik);
+            const elongasi = getElongation(jdMagrib);
+            if (altitude >= ambang.minTinggiHilal && elongasi >= ambang.minElongasi) {
+                return {
+                    terpenuhi: true,
+                    tinggiHilal: altitude,
+                    elongasi,
+                    umurBulanJam: (jdMagrib - jdConjunction) * 24,
+                };
+            }
+        }
+    }
+    if (best)
+        return best;
+    // Fallback: tidak ada magrib valid sama sekali — laporkan kondisi 24:00 GMT di titik cadangan.
+    const jdFallback = jdBatas;
+    const { altitude } = getMoonHorizontalCoordinates(jdFallback, TITIK_OPTIMUM_KHGT);
+    return {
+        terpenuhi: false,
+        tinggiHilal: altitude,
+        elongasi: getElongation(jdFallback),
+        umurBulanJam: (jdFallback - jdConjunction) * 24,
+    };
+}
+/** JDN dari tanggal kalender lokal (Gregorian), tanpa komponen jam/zona waktu. */
+function jdnDariTanggalLokal(date) {
+    const gy = date.getFullYear();
+    const gm = date.getMonth() + 1;
+    const gd = date.getDate();
+    const a = Math.floor((14 - gm) / 12);
+    const y = gy + 4800 - a;
+    const m = gm + 12 * a - 3;
+    return (gd + Math.floor((153 * m + 2) / 5) + 365 * y +
+        Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045);
+}
+/** Cache JDN awal bulan KHGT per nomor bulan sejak epoch — hisabnya deterministik. */
+const cacheAwalBulanKhgt = new Map();
+/**
+ * JDN hari sipil pertama sebuah bulan Hijriah menurut kaidah KHGT:
+ * bila di suatu tempat di bumi, saat magrib setempat sebelum pukul 24:00 GMT hari
+ * (UTC) terjadinya ijtimak, elongasi ≥ 8° dan tinggi hilal ≥ 5°, bulan baru mulai
+ * keesokan harinya; bila belum, digenapkan satu hari lagi (istikmal).
+ */
+export function jdnAwalBulanKhgt(hijriMonthIndex, hijriYear) {
+    const nomorBulan = (hijriYear - 1) * 12 + hijriMonthIndex;
+    const cached = cacheAwalBulanKhgt.get(nomorBulan);
+    if (cached !== undefined)
+        return cached;
+    const jdConjunction = cariWaktuIjtimakJd(perkiraanJdIjtimak(hijriMonthIndex, hijriYear));
+    const jdnHariKonjungsi = Math.floor(jdConjunction + 0.5); // hari sipil UTC saat ijtimak
+    const { terpenuhi } = evaluasiImkanGlobalKhgt(jdConjunction, jdnHariKonjungsi);
+    const jdn = jdnHariKonjungsi + (terpenuhi ? 1 : 2);
+    cacheAwalBulanKhgt.set(nomorBulan, jdn);
+    return jdn;
+}
+/**
+ * Konversi tanggal Masehi (kalender lokal pengguna) ke tanggal Hijriah KHGT.
+ *
+ * Perkiraan awal diambil dari lunasi rata-rata, lalu dikoreksi terhadap JDN awal
+ * bulan KHGT sesungguhnya. Tervalidasi terhadap kalender resmi
+ * khgt.muhammadiyah.or.id untuk 1448 H (lihat hijri.test.ts).
+ */
+export function konversiMasehiKeKhgt(date) {
+    const jdn = jdnDariTanggalLokal(date);
+    const awal = (k) => jdnAwalBulanKhgt(((k % 12) + 12) % 12, Math.floor(k / 12) + 1);
+    let k = Math.floor((jdn - (JD_EPOCH_HIJRIAH + 0.5)) / LUNASI_RATA_RATA);
+    while (awal(k) > jdn)
+        k -= 1;
+    while (awal(k + 1) <= jdn)
+        k += 1;
+    const monthIndex = ((k % 12) + 12) % 12;
+    return {
+        day: jdn - awal(k) + 1,
+        month: monthIndex + 1,
+        year: Math.floor(k / 12) + 1,
+        monthName: NAMA_BULAN_HIJRIAH[monthIndex],
+    };
+}
+/**
  * Mengevaluasi kriteria awal bulan Hijriah — SEMUA kriteria dihitung berdampingan.
  *
  * @param hijriMonthName Nama bulan Hijriah (lihat `NAMA_BULAN_HIJRIAH`)
@@ -252,14 +436,14 @@ export function hitungKriteriaBulan(hijriMonthName, hijriYear, localCoord, timez
     const { altitude: lokalTinggiHilal } = getMoonHorizontalCoordinates(jdMagrib, localCoord);
     const lokalElongasi = getElongation(jdMagrib);
     const umurBulanJam = (jdMagrib - jdConjunction) * 24;
-    // 4. Parameter geosentris global untuk kriteria matlak global (KHGT)
-    // Dievaluasi pada batas 24:00 UTC hari konjungsi, pada titik optimum di belahan
-    // bumi barat tempat hilal paling tinggi saat Magrib sebelum pukul 24:00 GMT.
-    const jdKhgtLimit = getJulianDate(new Date(`${dateMasehi}T23:59:59Z`));
-    const khgtElongasiGeosentris = getElongation(jdKhgtLimit);
-    const coordOptimum = { lat: 20, lng: -100 };
-    const { altitude: khgtTinggiHilalGeosentris } = getMoonHorizontalCoordinates(jdKhgtLimit, coordOptimum);
-    const umurBulanGlobalJam = (jdKhgtLimit - jdConjunction) * 24;
+    // 4. Parameter global untuk kriteria matlak global (KHGT): pindai seluruh bumi,
+    // uji saat magrib setempat yang jatuh sebelum 24:00 GMT hari konjungsi.
+    const jdnHariKonjungsi = Math.floor(jdConjunction + 0.5);
+    const imkanGlobal = evaluasiImkanGlobalKhgt(jdConjunction, jdnHariKonjungsi);
+    const jdKhgtLimit = jdnHariKonjungsi + 0.5; // 24:00 GMT hari konjungsi
+    const khgtElongasiGeosentris = imkanGlobal.elongasi;
+    const khgtTinggiHilalGeosentris = imkanGlobal.tinggiHilal;
+    const umurBulanGlobalJam = imkanGlobal.umurBulanJam;
     // 5. Evaluasi seluruh kriteria dengan ambang dari PARAMETER_KRITERIA_HIJRIAH
     const evaluasi = URUTAN_KRITERIA_HIJRIAH.map((kriteria) => {
         const parameter = PARAMETER_KRITERIA_HIJRIAH[kriteria];

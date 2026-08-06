@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import CaraPerhitungan, { langkahKriteriaHilal } from '@/components/features/CaraPerhitungan';
 import {
   hitungKriteriaBulan,
+  konversiMasehiKeKhgt,
   HijriKriteriaResult,
   KriteriaHijriah,
   NAMA_BULAN_HIJRIAH,
@@ -18,59 +19,6 @@ const BULAN_HIJRIAH = [...NAMA_BULAN_HIJRIAH];
 
 // Nama hari
 const NAMA_HARI = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-
-// Helper untuk menghitung tanggal Hijriah tabular perkiraan
-function getTabularHijri(date: Date): { day: number; month: number; year: number; monthName: string } {
-  // Epoch Hijriah tabular: 16 Juli 622 Masehi (JD 1948439.5)
-  // Menghitung Julian Date untuk input date
-  const time = date.getTime();
-  const jd = (time / 86400000) + 2440587.5;
-  
-  const daysSinceEpoch = jd - 1948439.5;
-  const cycleCount = Math.floor(daysSinceEpoch / 10631); // 1 siklus = 30 tahun = 10631 hari
-  let remainingDays = daysSinceEpoch % 10631;
-  
-  // Mencari tahun dalam siklus 30 tahun
-  let years = 0;
-  const leapYears = [2, 5, 7, 10, 13, 16, 18, 21, 24, 26, 29];
-  for (let y = 1; y <= 30; y++) {
-    const isLeap = leapYears.includes(y);
-    const daysInYear = isLeap ? 355 : 354;
-    if (remainingDays < daysInYear) {
-      break;
-    }
-    remainingDays -= daysInYear;
-    years++;
-  }
-  
-  const hYear = cycleCount * 30 + years + 1;
-  
-  // Mencari bulan dalam tahun tersebut (ganjil 30 hari, genap 29 hari, Zulhijjah kabisat 30 hari)
-  let hMonth = 0;
-  for (let m = 1; m <= 12; m++) {
-    const isLeapYear = leapYears.includes(hYear % 30);
-    let daysInMonth = m % 2 === 1 ? 30 : 29;
-    if (m === 12 && isLeapYear) {
-      daysInMonth = 30;
-    }
-    
-    if (remainingDays < daysInMonth) {
-      break;
-    }
-    remainingDays -= daysInMonth;
-    hMonth++;
-  }
-  
-  const hDay = Math.floor(remainingDays) + 1;
-  const hMonthIndex = hMonth % 12;
-
-  return {
-    day: hDay,
-    month: hMonthIndex + 1,
-    year: hYear,
-    monthName: BULAN_HIJRIAH[hMonthIndex]
-  };
-}
 
 export default function KalenderPage() {
   const [viewMonth, setViewMonth] = useState<Date | null>(null);
@@ -142,7 +90,7 @@ export default function KalenderPage() {
   // Isi tanggal Masehi & Hijriah
   for (let d = 1; d <= daysInMonth; d++) {
     const dayDate = new Date(year, month, d);
-    const hDate = getTabularHijri(dayDate);
+    const hDate = konversiMasehiKeKhgt(dayDate);
     const isToday = d === today.current.getDate() && month === today.current.getMonth() && year === today.current.getFullYear();
 
     // Hari besar Islam sederhana
@@ -257,7 +205,7 @@ export default function KalenderPage() {
               <div className="flex items-center gap-2">
                 <button onClick={goToToday} className="text-[11px] px-3 py-1 rounded-lg border border-card-border hover:border-sifa-green-600 hover:text-sifa-green-900 transition-colors font-semibold text-foreground/60 whitespace-nowrap">Bulan Ini</button>
                 <Badge variant="gold" className="font-mono text-[10px] whitespace-nowrap">
-                  {getTabularHijri(new Date(year, month, 1)).monthName} {getTabularHijri(new Date(year, month, 1)).year} H
+                  {konversiMasehiKeKhgt(new Date(year, month, 1)).monthName} {konversiMasehiKeKhgt(new Date(year, month, 1)).year} H
                 </Badge>
               </div>
             </div>
@@ -291,9 +239,9 @@ export default function KalenderPage() {
                   <span className="font-semibold">{today.current.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 </div>
                 <div className="flex justify-between border-t border-sifa-gold-500/20 pt-1.5 mt-1">
-                  <span className="text-foreground/65">Hijriah (Tabular):</span>
+                  <span className="text-foreground/65">Hijriah (KHGT):</span>
                   <span className="font-bold text-sifa-green-900 dark:text-sifa-gold-500">
-                    {getTabularHijri(today.current).day} {getTabularHijri(today.current).monthName} {getTabularHijri(today.current).year} H
+                    {konversiMasehiKeKhgt(today.current).day} {konversiMasehiKeKhgt(today.current).monthName} {konversiMasehiKeKhgt(today.current).year} H
                   </span>
                 </div>
               </div>
@@ -302,7 +250,7 @@ export default function KalenderPage() {
             <Card className="flex flex-col gap-3 text-xs leading-relaxed">
               <h4 className="font-heading font-bold text-sifa-green-900 dark:text-sifa-green-100">Catatan Metodologi</h4>
               <p>
-                SIFA menyajikan kalender Hijriah tabular berdasarkan algoritma aritmatika astronomis sebagai acuan konversi bulanan.
+                SIFA menyajikan kalender Hijriah menurut <strong>KHGT (Kalender Hijriah Global Tunggal)</strong> — hisab hakiki dengan kriteria elongasi ≥ 8° dan tinggi hilal ≥ 5° sebelum pukul 24:00 GMT, sebagaimana ditetapkan Munas Tarjih Muhammadiyah.
               </p>
               <p>
                 Untuk penentuan bulan-bulan penting ibadah syar&apos;i (Puasa Ramadan dan Hari Raya), hasil kalkulasi dapat divalidasi secara toposentris pada tab <strong>Kriteria Awal Bulan</strong>.

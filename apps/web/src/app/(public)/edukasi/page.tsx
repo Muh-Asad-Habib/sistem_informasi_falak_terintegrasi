@@ -124,7 +124,7 @@ const ARTIKEL: Article[] = [
           <table className="w-full text-xs">
             <tbody className="divide-y divide-card-border/40">
               {[
-                { w: 'Subuh', h: '−20°', ket: 'Fajar shadiq — astronomical twilight begins' },
+                { w: 'Subuh', h: '−18°', ket: 'Fajar shadiq — astronomical twilight begins' },
                 { w: 'Terbit', h: '≈ −0.833° − dip', ket: 'Koreksi refraksi (0.567°) + dip elevasi' },
                 { w: 'Zuhur', h: 'Transit', ket: 'Matahari tepat di meridian (kulminasi atas)' },
                 { w: 'Asar', h: 'tan(h)=1/tan(|φ−δ|)+1', ket: 'Bayangan = panjang benda + 1× (mazhab Syafii)' },
@@ -350,7 +350,7 @@ export default function EdukasiPage() {
             `1. Lokasi: φ = ${lat}°, λ = ${lng}°, Elevasi = 5 mdpl, WITA (GMT+8)`,
             `2. Tanggal: ${new Date().toLocaleDateString('id-ID')}`,
             `3. Transit Matahari = 12:00 − EqT + koreksi bujur`,
-            `4. Subuh (h=−20°): ${res.subuh}`,
+            `4. Subuh (h=−18°): ${res.subuh}`,
             `5. Terbit (h≈−0.83°−dip): ${res.terbit}`,
             `6. Zuhur (Transit): ${res.zuhur}`,
             `7. Asar (bayangan +1×): ${res.asar}`,
