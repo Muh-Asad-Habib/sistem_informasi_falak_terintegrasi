@@ -234,7 +234,20 @@ npx cloudflared tunnel --url http://localhost:3000
 
 ## 👥 Tim Pengembang
 
-> *(Akan diperbarui)*
+- [Muh. Asad Habib](https://github.com/Muh-Asad-Habib)
+- [Andi Akbar Arya Putra](https://github.com/andiakbararyaputra)
+- [Ahmad Ali Dwil Zaydi](https://github.com/AhmadAliDwilZaydi)
+- [Andi Syafiqah Ramadhani Nasrum](https://github.com/AndiSyafiqahRamadhaniNasrum)
+- [Muhamad Pasyafatir Adiyat](https://github.com/muhamad-pasyafatir-adiyat)
+- [Tiara Nabila Rajab](https://github.com/TiaraNabilaRajab)
+- [Muh. Ikram Maulana](https://github.com/MUH-IKRAM-MAULANA)
+- [Ibnu Arshysyahnan Mustafa ](https://github.com/Syncrred0)
+- [Andi Umroh Maulana Akbar](https://github.com/ANDI-UMROH)
+- [Muh. Arya Anggara](https://github.com/Aryaanggara916)
+- [Faidul](https://github.com/Faidul-12)
+- [Fitra Rezki](https://github.com/fitrarezki)
+- [Muh Iqram Hasan Basri](https://github.com/Muh-Iqram-Hasan-Basri)
+- [Salman alfarisi](https://github.com/SALMAN300ALFARISI)
 
 ---
 
